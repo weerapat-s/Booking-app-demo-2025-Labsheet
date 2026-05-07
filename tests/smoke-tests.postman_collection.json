@@ -1,0 +1,190 @@
+{
+  "info": {
+    "name": "Smoke Tests — Production",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "backendUrl", "value": "https://your-backend.onrender.com" },
+    { "key": "frontendUrl", "value": "https://your-frontend.vercel.app" },
+    { "key": "authToken", "value": "" }
+  ],
+  "item": [
+    {
+      "name": "Health & Connectivity",
+      "item": [
+        {
+          "name": "Backend Health Check",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Backend is reachable (200)', () => {",
+                  "  pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Health response is ok', () => {",
+                  "  const json = pm.response.json();",
+                  "  pm.expect(json.status).to.eql('ok');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "url": "{{backendUrl}}/health"
+          }
+        },
+        {
+          "name": "Frontend is reachable",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Frontend returns 200', () => {",
+                  "  pm.response.to.have.status(200);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "url": "{{frontendUrl}}"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Security Headers",
+      "item": [
+        {
+          "name": "Check Helmet Security Headers",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('x-content-type-options header present', () => {",
+                  "  pm.response.to.have.header('x-content-type-options');",
+                  "  pm.expect(pm.response.headers.get('x-content-type-options')).to.eql('nosniff');",
+                  "});",
+                  "pm.test('x-frame-options header present', () => {",
+                  "  pm.response.to.have.header('x-frame-options');",
+                  "});",
+                  "pm.test('No x-powered-by header (hidden)', () => {",
+                  "  pm.expect(pm.response.headers.get('x-powered-by')).to.be.undefined;",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "url": "{{backendUrl}}/api/rooms"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Core API",
+      "item": [
+        {
+          "name": "GET /api/rooms — Public",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 200', () => {",
+                  "  pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Returns array of rooms', () => {",
+                  "  const json = pm.response.json();",
+                  "  pm.expect(json).to.be.an('array');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "url": "{{backendUrl}}/api/rooms"
+          }
+        },
+        {
+          "name": "POST /api/login — Admin",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 200', () => {",
+                  "  pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Returns JWT token', () => {",
+                  "  const json = pm.response.json();",
+                  "  pm.expect(json).to.have.property('token');",
+                  "  pm.collectionVariables.set('authToken', json.token);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"username\": \"admin\", \"password\": \"admin123\"}"
+            },
+            "url": "{{backendUrl}}/api/login"
+          }
+        },
+        {
+          "name": "GET /api/bookings — Authenticated",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 200 with valid token', () => {",
+                  "  pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Returns array', () => {",
+                  "  pm.expect(pm.response.json()).to.be.an('array');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{authToken}}" }],
+            "url": "{{backendUrl}}/api/bookings"
+          }
+        },
+        {
+          "name": "GET /api/bookings — Unauthorized",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 401 without token', () => {",
+                  "  pm.response.to.have.status(401);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "url": "{{backendUrl}}/api/bookings"
+          }
+        }
+      ]
+    }
+  ]
+}

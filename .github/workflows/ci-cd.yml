@@ -67,7 +67,6 @@ jobs:
           NODE_ENV: test
         run: |
           cd backend
-          # รัน seed script ถ้ามี (สร้าง admin user สำหรับ test)
           node -e "
             const { PrismaClient } = require('@prisma/client');
             const bcrypt = require('bcryptjs');
@@ -79,8 +78,10 @@ jobs:
                 update: {},
                 create: { username: 'admin', password: hash, role: 'admin' }
               });
-              await prisma.room.create({
-                data: { name: 'Test Room 101', roomType: 'Standard', capacity: 2, price: 1000 }
+              await prisma.room.upsert({
+                where: { roomType: 'Standard' },
+                update: {},
+                create: { name: 'Test Room 101', roomType: 'Standard', description: 'Test room', capacity: 2, price: 1000 }
               });
               console.log('Seed completed');
             }
@@ -93,11 +94,18 @@ jobs:
           JWT_SECRET: ci-test-secret-key
           PORT: 3001
           NODE_ENV: test
+          FRONTEND_URL: http://localhost:5173
         run: |
           cd backend
-          npm start &
-          # รอให้ server พร้อม
-          sleep 5
+          node server.js &
+          echo "Waiting for server..."
+          for i in $(seq 1 15); do
+            if curl -sf http://localhost:3001/api/rooms > /dev/null 2>&1; then
+              echo "Server is ready"
+              break
+            fi
+            sleep 2
+          done
           curl -f http://localhost:3001/api/rooms || (echo "Server not ready" && exit 1)
 
       - name: Install Newman
@@ -107,15 +115,18 @@ jobs:
         run: |
           newman run tests/booking-api.postman_collection.json \
             --env-var "baseUrl=http://localhost:3001" \
-            --reporters cli,junit \
-            --reporter-junit-export newman-results.xml
+            --reporters cli,junit,htmlextra \
+            --reporter-junit-export newman-results.xml \
+            --reporter-htmlextra-export newman-report.html
 
       - name: Upload Newman test results
         uses: actions/upload-artifact@v4
         if: always()
         with:
           name: newman-test-results
-          path: newman-results.xml
+          path: |
+            newman-results.xml
+            newman-report.html
 
   # ─────────────────────────────────────────────
   # Job 2: Frontend CI — Install, Build, Lint
@@ -140,9 +151,14 @@ jobs:
           cd frontend
           npm ci
 
+      - name: Lint frontend
+        run: |
+          cd frontend
+          npm run lint || true
+
       - name: Build frontend
         env:
-          VITE_API_URL: http://localhost:3001
+          VITE_API_URL: ${{ secrets.RENDER_BACKEND_URL || 'http://localhost:3001' }}
         run: |
           cd frontend
           npm run build
@@ -154,13 +170,53 @@ jobs:
           path: frontend/dist/
 
   # ─────────────────────────────────────────────
-  # Job 3: Deploy Frontend to Vercel
+  # Job 3: Security Scan
+  # ─────────────────────────────────────────────
+  security-scan:
+    name: Security Scan
+    runs-on: ubuntu-latest
+    needs: [backend-test, frontend-build]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: npm audit — Backend
+        run: |
+          cd backend
+          npm ci
+          npm audit --audit-level=high || echo "::warning::Backend has high/critical vulnerabilities"
+
+      - name: npm audit — Frontend
+        run: |
+          cd frontend
+          npm ci
+          npm audit --audit-level=high || echo "::warning::Frontend has high/critical vulnerabilities"
+
+      - name: TruffleHog — Secret Scanning
+        uses: trufflesecurity/trufflehog@main
+        with:
+          path: ./
+          base: ${{ github.event.repository.default_branch }}
+          head: HEAD
+          extra_args: --only-verified
+        continue-on-error: true
+
+  # ─────────────────────────────────────────────
+  # Job 4: Deploy Frontend to Vercel
   # (เฉพาะเมื่อ push ไปที่ main เท่านั้น)
   # ─────────────────────────────────────────────
   deploy-frontend:
     name: Deploy Frontend → Vercel
     runs-on: ubuntu-latest
-    needs: [backend-test, frontend-build]
+    needs: [security-scan]
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
 
     steps:
@@ -180,13 +236,13 @@ jobs:
             --yes
 
   # ─────────────────────────────────────────────
-  # Job 4: Deploy Backend to Render
+  # Job 5: Deploy Backend to Render
   # (เฉพาะเมื่อ push ไปที่ main เท่านั้น)
   # ─────────────────────────────────────────────
   deploy-backend-render:
     name: Deploy Backend → Render
     runs-on: ubuntu-latest
-    needs: [backend-test, frontend-build]
+    needs: [security-scan]
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
 
     steps:
@@ -194,8 +250,8 @@ jobs:
         run: |
           curl -X POST "${{ secrets.RENDER_DEPLOY_HOOK_URL }}"
 
-      - name: Wait for Render deployment (180s)
-        run: sleep 180
+      - name: Wait for Render deployment (90s)
+        run: sleep 90
 
       - name: Health check — Backend on Render
         run: |
@@ -204,14 +260,60 @@ jobs:
           ELAPSED=0
           while [ $ELAPSED -lt $TIMEOUT ]; do
             echo "Health check attempt... (${ELAPSED}/${TIMEOUT}s)"
-            if curl -f --connect-timeout 5 --max-time 10 "${{ secrets.RENDER_BACKEND_URL }}/api/rooms" > /dev/null 2>&1; then
-              echo "✅ Render deployment successful!"
+            if curl -sf --connect-timeout 5 --max-time 10 "${{ secrets.RENDER_BACKEND_URL }}/health" > /dev/null 2>&1; then
+              echo "Render deployment successful!"
               exit 0
             fi
             sleep $INTERVAL
             ELAPSED=$((ELAPSED + INTERVAL))
           done
-          echo "❌ Render health check failed after ${TIMEOUT}s"
+          echo "Render health check failed after ${TIMEOUT}s"
           exit 1
 
+  # ─────────────────────────────────────────────
+  # Job 6: Post-Deploy Smoke Tests
+  # ─────────────────────────────────────────────
+  post-deploy-smoke-test:
+    name: Post-Deploy Smoke Tests
+    runs-on: ubuntu-latest
+    needs: [deploy-frontend, deploy-backend-render]
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
 
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install Newman
+        run: npm install -g newman newman-reporter-htmlextra
+
+      - name: Run Smoke Tests on Production
+        env:
+          BACKEND_URL: ${{ secrets.RENDER_BACKEND_URL }}
+          FRONTEND_URL: ${{ secrets.VERCEL_FRONTEND_URL }}
+        run: |
+          newman run tests/smoke-tests.postman_collection.json \
+            --env-var "backendUrl=$BACKEND_URL" \
+            --env-var "frontendUrl=$FRONTEND_URL" \
+            --reporters cli,junit,htmlextra \
+            --reporter-junit-export smoke-results.xml \
+            --reporter-htmlextra-export smoke-report.html
+
+      - name: Check security headers
+        env:
+          BACKEND_URL: ${{ secrets.RENDER_BACKEND_URL }}
+        run: |
+          echo "Checking security headers on $BACKEND_URL/api/rooms..."
+          HEADERS=$(curl -sI "$BACKEND_URL/api/rooms")
+          echo "$HEADERS"
+          echo "$HEADERS" | grep -i "x-content-type-options" && echo "x-content-type-options: OK" || echo "::warning::Missing x-content-type-options header"
+          echo "$HEADERS" | grep -i "x-frame-options" && echo "x-frame-options: OK" || echo "::warning::Missing x-frame-options header"
+          echo "$HEADERS" | grep -i "x-xss-protection" && echo "x-xss-protection: OK" || true
+
+      - name: Upload Smoke Test results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: smoke-test-results
+          path: |
+            smoke-results.xml
+            smoke-report.html

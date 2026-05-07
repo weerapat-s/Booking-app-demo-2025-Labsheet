@@ -1,0 +1,123 @@
+name: Deploy to QA (develop branch)
+
+on:
+  push:
+    branches: [ develop ]
+
+env:
+  NODE_VERSION: '20'
+
+jobs:
+  # ─────────────────────────────────────────────
+  # Job 1: Backend Tests (same as CI)
+  # ─────────────────────────────────────────────
+  backend-test:
+    name: Backend Tests (QA)
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_DB: booking_qa
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          cache-dependency-path: backend/package-lock.json
+
+      - name: Install and migrate
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/booking_qa
+          JWT_SECRET: qa-test-secret
+          FRONTEND_URL: '*'
+        run: |
+          cd backend
+          npm ci
+          npx prisma generate --schema=prisma/schema.prisma
+          npx prisma migrate deploy --schema=prisma/schema.prisma
+
+      - name: Seed QA data and start server
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/booking_qa
+          JWT_SECRET: qa-test-secret
+          PORT: 3001
+          FRONTEND_URL: '*'
+        run: |
+          cd backend
+          node -e "
+            const { PrismaClient } = require('@prisma/client');
+            const bcrypt = require('bcryptjs');
+            const prisma = new PrismaClient();
+            async function seed() {
+              const hash = await bcrypt.hash('admin123', 10);
+              await prisma.user.upsert({
+                where: { username: 'admin' },
+                update: {},
+                create: { username: 'admin', password: hash, role: 'admin' }
+              });
+              await prisma.room.upsert({
+                where: { roomType: 'Standard' },
+                update: {},
+                create: { name: 'Test Room 101', roomType: 'Standard', description: 'Test room', capacity: 2, price: 1000 }
+              });
+            }
+            seed().catch(console.error).finally(() => prisma.\$disconnect());
+          "
+          node server.js &
+          sleep 5
+          curl -f http://localhost:3001/api/rooms
+
+      - name: Install Newman and run tests
+        run: |
+          npm install -g newman newman-reporter-htmlextra
+          newman run tests/booking-api.postman_collection.json \
+            --env-var "baseUrl=http://localhost:3001" \
+            --reporters cli,junit \
+            --reporter-junit-export qa-newman-results.xml
+
+      - name: Upload QA test results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: qa-newman-results
+          path: qa-newman-results.xml
+
+  # ─────────────────────────────────────────────
+  # Job 2: Deploy to QA Environment
+  # ─────────────────────────────────────────────
+  deploy-qa:
+    name: Deploy to QA
+    runs-on: ubuntu-latest
+    needs: backend-test
+    environment: qa
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Deploy Frontend to Vercel (QA Preview)
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+        run: |
+          npm install -g vercel
+          cd frontend
+          vercel --token $VERCEL_TOKEN --yes
+          # ไม่ใช้ --prod เพื่อให้ได้ preview URL
+
+      - name: Deploy Backend to Render (QA)
+        run: |
+          curl -X POST "${{ secrets.RENDER_QA_DEPLOY_HOOK }}"
+          echo "QA deployment triggered"
