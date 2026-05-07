@@ -45,14 +45,14 @@ const BookingList = () => {
     } catch { alert('เกิดข้อผิดพลาดในการลบ'); }
   };
 
-  const handleConfirm = async (booking) => {
+  const handleStatusChange = async (booking, newStatus) => {
     try {
-      await axios.put(`${API_URL}/api/bookings/${booking.id}`, {
-        ...booking,
-        status: 'confirmed',
-      }, { headers: { Authorization: `Bearer ${token}` } });
-      fetchBookings();
-    } catch { alert('เกิดข้อผิดพลาดในการยืนยัน'); }
+      await axios.put(`${API_URL}/api/bookings/${booking.id}`,
+        { ...booking, status: newStatus },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      setBookings(prev => prev.map(b => b.id === booking.id ? { ...b, status: newStatus } : b));
+    } catch { alert('เกิดข้อผิดพลาดในการอัปเดตสถานะ'); }
   };
 
   const filtered = bookings.filter(b => {
@@ -146,22 +146,21 @@ const BookingList = () => {
                     {b.guests} ท่าน
                   </td>
                   <td className="py-3 px-4">
-                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${statusColor[b.status]}`}>
-                      {statusLabel[b.status]}
-                    </span>
+                    <select
+                      value={b.status}
+                      onChange={e => handleStatusChange(b, e.target.value)}
+                      className={`text-xs font-medium px-2 py-1 rounded-lg border-0 cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-300 ${statusColor[b.status]}`}>
+                      {Object.entries(statusLabel).map(([k, v]) => (
+                        <option key={k} value={k}>{v}</option>
+                      ))}
+                    </select>
                   </td>
                   <td className="py-3 px-4 text-right">
-                    <div className="flex items-center justify-end gap-2">
-                      {b.status === 'pending' && (
-                        <button onClick={() => handleConfirm(b)}
-                          className="inline-flex items-center gap-1 bg-green-500 hover:bg-green-600 text-white text-xs font-medium px-2.5 py-1 rounded-lg transition-colors">
-                          ✓ ยืนยัน
-                        </button>
-                      )}
+                    <div className="flex items-center justify-end gap-3">
                       <Link to={`/admin/bookings/edit/${b.id}`}
-                        className="text-blue-500 hover:text-blue-700 text-xs font-medium px-1">แก้ไข</Link>
+                        className="text-blue-500 hover:text-blue-700 text-xs font-medium">แก้ไข</Link>
                       <button onClick={() => handleDelete(b.id)}
-                        className="text-red-400 hover:text-red-600 text-xs font-medium px-1">ลบ</button>
+                        className="text-red-400 hover:text-red-600 text-xs font-medium">ลบ</button>
                     </div>
                   </td>
                 </tr>

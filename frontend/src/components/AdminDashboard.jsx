@@ -64,12 +64,12 @@ const AdminDashboard = () => {
       return sum + (b.room?.price || 0) * nights;
     }, 0);
 
-  const handleConfirm = async (booking) => {
+  const handleStatusChange = async (booking, newStatus) => {
     try {
-      await axios.put(`${API_URL}/api/bookings/${booking.id}`, { ...booking, status: 'confirmed' },
+      await axios.put(`${API_URL}/api/bookings/${booking.id}`, { ...booking, status: newStatus },
         { headers: { Authorization: `Bearer ${token}` } });
-      setBookings(prev => prev.map(b => b.id === booking.id ? { ...b, status: 'confirmed' } : b));
-    } catch { alert('เกิดข้อผิดพลาดในการยืนยัน'); }
+      setBookings(prev => prev.map(b => b.id === booking.id ? { ...b, status: newStatus } : b));
+    } catch { alert('เกิดข้อผิดพลาดในการอัปเดตสถานะ'); }
   };
 
   const recent = [...bookings].slice(0, 8);
@@ -178,21 +178,18 @@ const AdminDashboard = () => {
                     {new Date(b.checkin).toLocaleDateString('th-TH')}
                   </td>
                   <td className="py-2.5 px-3">
-                    <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${statusColor[b.status]}`}>
-                      {statusLabel[b.status]}
-                    </span>
+                    <select
+                      value={b.status}
+                      onChange={e => handleStatusChange(b, e.target.value)}
+                      className={`text-xs font-medium px-2 py-0.5 rounded-lg border-0 cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-300 ${statusColor[b.status]}`}>
+                      {Object.entries(statusLabel).map(([k, v]) => (
+                        <option key={k} value={k}>{v}</option>
+                      ))}
+                    </select>
                   </td>
                   <td className="py-2.5 px-3 text-right">
-                    <div className="flex items-center justify-end gap-2">
-                      {b.status === 'pending' && (
-                        <button onClick={() => handleConfirm(b)}
-                          className="bg-green-500 hover:bg-green-600 text-white text-xs px-2 py-0.5 rounded-lg">
-                          ✓ ยืนยัน
-                        </button>
-                      )}
-                      <Link to={`/admin/bookings/edit/${b.id}`}
-                        className="text-blue-500 hover:text-blue-700 text-xs">แก้ไข</Link>
-                    </div>
+                    <Link to={`/admin/bookings/edit/${b.id}`}
+                      className="text-blue-500 hover:text-blue-700 text-xs">แก้ไข</Link>
                   </td>
                 </tr>
               ))}
