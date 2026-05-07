@@ -4,103 +4,161 @@ import { Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import API_URL from '../config';
 
+const statusLabel = { pending: 'รอดำเนินการ', confirmed: 'ยืนยันแล้ว', cancelled: 'ยกเลิก', completed: 'เสร็จสิ้น' };
+const statusColor = {
+  pending:   'bg-yellow-100 text-yellow-700',
+  confirmed: 'bg-green-100 text-green-700',
+  cancelled: 'bg-red-100 text-red-700',
+  completed: 'bg-blue-100 text-blue-700',
+};
+
 const BookingList = () => {
   const [bookings, setBookings] = useState([]);
   const [loading, setLoading]   = useState(true);
   const [error, setError]       = useState(null);
-  const { token, logout }       = useAuth();
+  const [search, setSearch]     = useState('');
+  const [filterStatus, setFilterStatus] = useState('all');
+  const { token, logout } = useAuth();
 
   useEffect(() => { fetchBookings(); }, [token]);
 
   const fetchBookings = async () => {
+    setLoading(true);
     try {
-      const response = await axios.get(`${API_URL}/api/bookings`, {
+      const res = await axios.get(`${API_URL}/api/bookings`, {
         headers: { Authorization: `Bearer ${token}` },
       });
-      setBookings(response.data);
+      setBookings(res.data);
     } catch (err) {
-      if (err.response?.status === 401 || err.response?.status === 403) {
-        logout(); // Token หมดอายุ — ล็อกเอาท์อัตโนมัติ
-      } else {
-        setError('ไม่สามารถดึงข้อมูลได้: ' + err.message);
-      }
-    } finally {
-      setLoading(false);
-    }
+      if (err.response?.status === 401 || err.response?.status === 403) logout();
+      else setError('ไม่สามารถดึงข้อมูลได้');
+    } finally { setLoading(false); }
   };
 
   const handleDelete = async (id) => {
-    if (!window.confirm('ต้องการลบข้อมูลการจองนี้?')) return;
+    if (!window.confirm('ต้องการลบการจองนี้?')) return;
     try {
       await axios.delete(`${API_URL}/api/bookings/${id}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       fetchBookings();
-    } catch (err) {
-      alert('เกิดข้อผิดพลาดในการลบข้อมูล');
-    }
+    } catch { alert('เกิดข้อผิดพลาดในการลบ'); }
   };
 
-  if (loading) return <div className="text-center py-4">กำลังโหลดข้อมูล...</div>;
-  if (error)   return <div className="text-center py-4 text-red-500">{error}</div>;
+  const filtered = bookings.filter(b => {
+    const matchSearch = !search ||
+      b.fullname.toLowerCase().includes(search.toLowerCase()) ||
+      b.email.toLowerCase().includes(search.toLowerCase()) ||
+      b.phone.includes(search);
+    const matchStatus = filterStatus === 'all' || b.status === filterStatus;
+    return matchSearch && matchStatus;
+  });
 
-  const roomLabel = { standard: 'ห้องมาตรฐาน', deluxe: 'ห้องดีลักซ์', suite: 'ห้องสวีท' };
+  if (loading) return <div className="flex items-center justify-center h-64 text-gray-400">กำลังโหลด...</div>;
+  if (error)   return <div className="p-6 text-red-500">{error}</div>;
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
+    <div className="space-y-5">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
-          <h2 className="text-2xl font-bold">รายการจองห้องพัก</h2>
-          <p className="text-gray-600 mt-1">จัดการการจอง ดูรายละเอียด และแก้ไขสถานะ</p>
+          <h1 className="text-2xl font-bold text-gray-800">การจองทั้งหมด</h1>
+          <p className="text-gray-500 text-sm mt-0.5">{bookings.length} รายการ</p>
         </div>
         <Link to="/admin/bookings/new"
-          className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600">
-          + เพิ่มการจอง
+          className="inline-flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 text-sm font-medium">
+          + เพิ่มการจองใหม่
         </Link>
       </div>
 
-      {bookings.length === 0 ? (
-        <p className="text-center py-4 text-gray-500">ไม่พบข้อมูลการจอง</p>
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {bookings.map((booking) => (
-            <div key={booking.id} className="bg-white p-4 rounded-lg shadow">
-              <div className="flex justify-between items-start mb-3">
-                <div>
-                  <h3 className="font-bold">{booking.fullname}</h3>
-                  <p className="text-xs text-gray-500">สร้างเมื่อ {new Date(booking.createdAt).toLocaleDateString('th-TH')}</p>
-                </div>
-                <span className={`px-2 py-1 rounded-full text-xs font-semibold ${
-                  booking.status === 'confirmed' ? 'bg-green-100 text-green-700' :
-                  booking.status === 'cancelled' ? 'bg-red-100 text-red-700' :
-                  booking.status === 'completed' ? 'bg-blue-100 text-blue-700' : 'bg-yellow-100 text-yellow-700'
-                }`}>
-                  {booking.status}
-                </span>
-              </div>
-              <p className="text-gray-600 text-sm">อีเมล: {booking.email}</p>
-              <p className="text-gray-600 text-sm">เบอร์โทร: {booking.phone}</p>
-              <p className="text-gray-600 text-sm">ประเภทห้อง: {roomLabel[booking.roomtype]}</p>
-              <p className="text-gray-600 text-sm">
-                เช็คอิน: {new Date(booking.checkin).toLocaleDateString('th-TH')}
-              </p>
-              <p className="text-gray-600 text-sm">
-                เช็คเอาท์: {new Date(booking.checkout).toLocaleDateString('th-TH')}
-              </p>
-              <p className="text-gray-600 text-sm">ผู้เข้าพัก: {booking.guests} ท่าน</p>
-              {booking.comment && (
-                <p className="text-gray-500 text-sm mt-1 italic">หมายเหตุ: {booking.comment}</p>
-              )}
-              <div className="mt-4 flex items-center justify-between gap-2">
-                <Link to={`/admin/bookings/edit/${booking.id}`}
-                  className="text-blue-500 hover:text-blue-700 text-sm font-medium">แก้ไข</Link>
-                <button onClick={() => handleDelete(booking.id)}
-                  className="text-red-500 hover:text-red-700 text-sm font-medium">ลบ</button>
-              </div>
-            </div>
+      {/* Filters */}
+      <div className="bg-white rounded-xl shadow-sm p-4 flex flex-col sm:flex-row gap-3">
+        <input
+          type="text"
+          placeholder="ค้นหาชื่อ, อีเมล, เบอร์โทร..."
+          value={search}
+          onChange={e => setSearch(e.target.value)}
+          className="flex-1 border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-300"
+        />
+        <select
+          value={filterStatus}
+          onChange={e => setFilterStatus(e.target.value)}
+          className="border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-300">
+          <option value="all">สถานะทั้งหมด</option>
+          {Object.entries(statusLabel).map(([k, v]) => (
+            <option key={k} value={k}>{v}</option>
           ))}
+        </select>
+        {(search || filterStatus !== 'all') && (
+          <button onClick={() => { setSearch(''); setFilterStatus('all'); }}
+            className="text-sm text-gray-500 hover:text-gray-700 px-2">
+            ล้างตัวกรอง ✕
+          </button>
+        )}
+      </div>
+
+      {/* Table */}
+      <div className="bg-white rounded-xl shadow-sm overflow-hidden">
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead className="bg-gray-50 border-b border-gray-100">
+              <tr>
+                <th className="text-left py-3 px-4 text-gray-500 font-medium">#</th>
+                <th className="text-left py-3 px-4 text-gray-500 font-medium">ผู้จอง</th>
+                <th className="text-left py-3 px-4 text-gray-500 font-medium hidden md:table-cell">ห้องพัก</th>
+                <th className="text-left py-3 px-4 text-gray-500 font-medium hidden lg:table-cell">วันเช็คอิน</th>
+                <th className="text-left py-3 px-4 text-gray-500 font-medium hidden lg:table-cell">วันเช็คเอาท์</th>
+                <th className="text-left py-3 px-4 text-gray-500 font-medium hidden md:table-cell">ผู้เข้าพัก</th>
+                <th className="text-left py-3 px-4 text-gray-500 font-medium">สถานะ</th>
+                <th className="text-right py-3 px-4 text-gray-500 font-medium">จัดการ</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-gray-50">
+              {filtered.length === 0 ? (
+                <tr><td colSpan={8} className="text-center py-12 text-gray-400">ไม่พบข้อมูลการจอง</td></tr>
+              ) : filtered.map(b => (
+                <tr key={b.id} className="hover:bg-gray-50 transition-colors">
+                  <td className="py-3 px-4 text-gray-400 font-mono text-xs">{b.id}</td>
+                  <td className="py-3 px-4">
+                    <div className="font-medium text-gray-800">{b.fullname}</div>
+                    <div className="text-xs text-gray-400">{b.email}</div>
+                    <div className="text-xs text-gray-400">{b.phone}</div>
+                  </td>
+                  <td className="py-3 px-4 text-gray-600 hidden md:table-cell">
+                    {b.room?.name || b.roomtype}
+                  </td>
+                  <td className="py-3 px-4 text-gray-600 hidden lg:table-cell">
+                    {new Date(b.checkin).toLocaleDateString('th-TH')}
+                  </td>
+                  <td className="py-3 px-4 text-gray-600 hidden lg:table-cell">
+                    {new Date(b.checkout).toLocaleDateString('th-TH')}
+                  </td>
+                  <td className="py-3 px-4 text-gray-600 hidden md:table-cell">
+                    {b.guests} ท่าน
+                  </td>
+                  <td className="py-3 px-4">
+                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${statusColor[b.status]}`}>
+                      {statusLabel[b.status]}
+                    </span>
+                  </td>
+                  <td className="py-3 px-4 text-right">
+                    <div className="flex items-center justify-end gap-3">
+                      <Link to={`/admin/bookings/edit/${b.id}`}
+                        className="text-blue-500 hover:text-blue-700 text-xs font-medium">แก้ไข</Link>
+                      <button onClick={() => handleDelete(b.id)}
+                        className="text-red-400 hover:text-red-600 text-xs font-medium">ลบ</button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
-      )}
+        {filtered.length > 0 && (
+          <div className="px-4 py-3 border-t border-gray-100 text-xs text-gray-400">
+            แสดง {filtered.length} จาก {bookings.length} รายการ
+          </div>
+        )}
+      </div>
     </div>
   );
 };

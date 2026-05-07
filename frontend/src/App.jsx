@@ -6,6 +6,7 @@ import BookingList      from './components/BookingList';
 import BookingCreate    from './components/BookingCreate';
 import BookingEdit      from './components/BookingEdit';
 import AdminDashboard   from './components/AdminDashboard';
+import AdminLayout      from './components/AdminLayout';
 import RoomsManagement  from './components/RoomsManagement';
 import Reports          from './components/Reports';
 import ProtectedRoute   from './components/ProtectedRoute';
@@ -22,17 +23,17 @@ function App() {
             <Route path="/booking" element={<BookingForm />} />
             <Route path="/login"  element={<Login />} />
             <Route path="/admin"
-              element={<ProtectedRoute><AdminDashboard /></ProtectedRoute>} />
+              element={<ProtectedRoute><AdminLayout><AdminDashboard /></AdminLayout></ProtectedRoute>} />
             <Route path="/admin/bookings"
-              element={<ProtectedRoute><BookingList /></ProtectedRoute>} />
+              element={<ProtectedRoute><AdminLayout><BookingList /></AdminLayout></ProtectedRoute>} />
             <Route path="/admin/bookings/new"
-              element={<ProtectedRoute><BookingCreate /></ProtectedRoute>} />
+              element={<ProtectedRoute><AdminLayout><BookingCreate /></AdminLayout></ProtectedRoute>} />
             <Route path="/admin/bookings/edit/:id"
-              element={<ProtectedRoute><BookingEdit /></ProtectedRoute>} />
+              element={<ProtectedRoute><AdminLayout><BookingEdit /></AdminLayout></ProtectedRoute>} />
             <Route path="/admin/rooms"
-              element={<ProtectedRoute><RoomsManagement /></ProtectedRoute>} />
+              element={<ProtectedRoute><AdminLayout><RoomsManagement /></AdminLayout></ProtectedRoute>} />
             <Route path="/admin/reports"
-              element={<ProtectedRoute><Reports /></ProtectedRoute>} />
+              element={<ProtectedRoute><AdminLayout><Reports /></AdminLayout></ProtectedRoute>} />
           </Routes>
         </div>
       </Router>
@@ -40,21 +41,26 @@ function App() {
   );
 }
 
-// Navigation Bar — แสดงปุ่ม Login หรือ Admin ตาม auth state
 const NavBar = () => {
   const { user } = useAuth();
   return (
-    <nav className="bg-white shadow-md">
+    <nav className="bg-white shadow-sm">
       <div className="container mx-auto px-4">
         <div className="flex justify-between items-center h-16">
-          <Link to="/" className="text-xl font-bold">ระบบจองห้องพัก</Link>
-          <div className="space-x-4">
-            <Link to="/"        className="text-gray-600 hover:text-gray-900">หน้าแรก</Link>
-            <Link to="/booking" className="text-gray-600 hover:text-gray-900">จองห้องพัก</Link>
+          <Link to="/" className="text-xl font-bold text-gray-800">🏨 ระบบจองห้องพัก</Link>
+          <div className="flex items-center gap-4">
+            <Link to="/"        className="text-sm text-gray-600 hover:text-gray-900">หน้าแรก</Link>
+            <Link to="/booking" className="text-sm text-gray-600 hover:text-gray-900">จองห้องพัก</Link>
             {user ? (
-              <Link to="/admin" className="text-gray-600 hover:text-gray-900">สำหรับผู้ดูแล</Link>
+              <Link to="/admin"
+                className="text-sm bg-gray-800 text-white px-4 py-1.5 rounded-lg hover:bg-gray-700">
+                Admin Panel
+              </Link>
             ) : (
-              <Link to="/login" className="text-blue-500 hover:text-blue-700 font-medium">เข้าสู่ระบบ</Link>
+              <Link to="/login"
+                className="text-sm bg-blue-600 text-white px-4 py-1.5 rounded-lg hover:bg-blue-700">
+                เข้าสู่ระบบ
+              </Link>
             )}
           </div>
         </div>
