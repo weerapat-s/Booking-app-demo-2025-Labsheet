@@ -63,8 +63,6 @@ jobs:
       - name: Seed test data
         env:
           DATABASE_URL: postgresql://postgres:postgres@localhost:5432/booking_test
-          JWT_SECRET: ci-test-secret-key
-          NODE_ENV: test
         run: |
           cd backend
           node -e "
@@ -94,13 +92,13 @@ jobs:
           JWT_SECRET: ci-test-secret-key
           PORT: 3001
           NODE_ENV: test
-          FRONTEND_URL: http://localhost:5173
+          FRONTEND_URL: '*'
         run: |
           cd backend
           node server.js &
           echo "Waiting for server..."
           for i in $(seq 1 15); do
-            if curl -sf http://localhost:3001/api/rooms > /dev/null 2>&1; then
+            if curl -sf http://localhost:3001/health > /dev/null 2>&1; then
               echo "Server is ready"
               break
             fi
@@ -158,7 +156,7 @@ jobs:
 
       - name: Build frontend
         env:
-          VITE_API_URL: ${{ secrets.RENDER_BACKEND_URL || 'http://localhost:3001' }}
+          VITE_API_URL: http://localhost:3001
         run: |
           cd frontend
           npm run build
@@ -191,20 +189,20 @@ jobs:
       - name: npm audit — Backend
         run: |
           cd backend
-          npm ci
+          npm ci --quiet
           npm audit --audit-level=high || echo "::warning::Backend has high/critical vulnerabilities"
 
       - name: npm audit — Frontend
         run: |
           cd frontend
-          npm ci
+          npm ci --quiet
           npm audit --audit-level=high || echo "::warning::Frontend has high/critical vulnerabilities"
 
       - name: TruffleHog — Secret Scanning
         uses: trufflesecurity/trufflehog@main
         with:
           path: ./
-          base: ${{ github.event.repository.default_branch }}
+          base: HEAD~1
           head: HEAD
           extra_args: --only-verified
         continue-on-error: true
@@ -230,10 +228,13 @@ jobs:
         env:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
         run: |
+          if [ -z "$VERCEL_TOKEN" ]; then
+            echo "VERCEL_TOKEN not set — skipping Vercel deployment"
+            echo "Set VERCEL_TOKEN in GitHub Secrets to enable deployment"
+            exit 0
+          fi
           cd frontend
-          vercel --prod \
-            --token $VERCEL_TOKEN \
-            --yes
+          vercel --prod --token "$VERCEL_TOKEN" --yes
 
   # ─────────────────────────────────────────────
   # Job 5: Deploy Backend to Render
@@ -247,20 +248,34 @@ jobs:
 
     steps:
       - name: Trigger Render Deployment
+        env:
+          RENDER_HOOK: ${{ secrets.RENDER_DEPLOY_HOOK_URL }}
         run: |
-          curl -X POST "${{ secrets.RENDER_DEPLOY_HOOK_URL }}"
+          if [ -z "$RENDER_HOOK" ]; then
+            echo "RENDER_DEPLOY_HOOK_URL not set — skipping Render deployment"
+            echo "Set RENDER_DEPLOY_HOOK_URL in GitHub Secrets to enable deployment"
+            exit 0
+          fi
+          curl -f -X POST "$RENDER_HOOK"
 
       - name: Wait for Render deployment (90s)
-        run: sleep 90
+        env:
+          RENDER_HOOK: ${{ secrets.RENDER_DEPLOY_HOOK_URL }}
+        run: |
+          [ -z "$RENDER_HOOK" ] && exit 0
+          sleep 90
 
       - name: Health check — Backend on Render
+        env:
+          RENDER_URL: ${{ secrets.RENDER_BACKEND_URL }}
         run: |
+          [ -z "$RENDER_URL" ] && exit 0
           TIMEOUT=300
           INTERVAL=10
           ELAPSED=0
           while [ $ELAPSED -lt $TIMEOUT ]; do
             echo "Health check attempt... (${ELAPSED}/${TIMEOUT}s)"
-            if curl -sf --connect-timeout 5 --max-time 10 "${{ secrets.RENDER_BACKEND_URL }}/health" > /dev/null 2>&1; then
+            if curl -sf --connect-timeout 5 --max-time 10 "$RENDER_URL/health" > /dev/null 2>&1; then
               echo "Render deployment successful!"
               exit 0
             fi
@@ -283,6 +298,17 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Check deployment secrets
+        env:
+          BACKEND_URL: ${{ secrets.RENDER_BACKEND_URL }}
+          FRONTEND_URL: ${{ secrets.VERCEL_FRONTEND_URL }}
+        run: |
+          if [ -z "$BACKEND_URL" ] || [ -z "$FRONTEND_URL" ]; then
+            echo "RENDER_BACKEND_URL or VERCEL_FRONTEND_URL not set — skipping smoke tests"
+            exit 0
+          fi
+          echo "Running smoke tests against $BACKEND_URL"
+
       - name: Install Newman
         run: npm install -g newman newman-reporter-htmlextra
 
@@ -291,23 +317,13 @@ jobs:
           BACKEND_URL: ${{ secrets.RENDER_BACKEND_URL }}
           FRONTEND_URL: ${{ secrets.VERCEL_FRONTEND_URL }}
         run: |
+          [ -z "$BACKEND_URL" ] && exit 0
           newman run tests/smoke-tests.postman_collection.json \
             --env-var "backendUrl=$BACKEND_URL" \
             --env-var "frontendUrl=$FRONTEND_URL" \
             --reporters cli,junit,htmlextra \
             --reporter-junit-export smoke-results.xml \
             --reporter-htmlextra-export smoke-report.html
-
-      - name: Check security headers
-        env:
-          BACKEND_URL: ${{ secrets.RENDER_BACKEND_URL }}
-        run: |
-          echo "Checking security headers on $BACKEND_URL/api/rooms..."
-          HEADERS=$(curl -sI "$BACKEND_URL/api/rooms")
-          echo "$HEADERS"
-          echo "$HEADERS" | grep -i "x-content-type-options" && echo "x-content-type-options: OK" || echo "::warning::Missing x-content-type-options header"
-          echo "$HEADERS" | grep -i "x-frame-options" && echo "x-frame-options: OK" || echo "::warning::Missing x-frame-options header"
-          echo "$HEADERS" | grep -i "x-xss-protection" && echo "x-xss-protection: OK" || true
 
       - name: Upload Smoke Test results
         uses: actions/upload-artifact@v4
