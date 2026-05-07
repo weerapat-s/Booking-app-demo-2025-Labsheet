@@ -64,6 +64,14 @@ const AdminDashboard = () => {
       return sum + (b.room?.price || 0) * nights;
     }, 0);
 
+  const handleConfirm = async (booking) => {
+    try {
+      await axios.put(`${API_URL}/api/bookings/${booking.id}`, { ...booking, status: 'confirmed' },
+        { headers: { Authorization: `Bearer ${token}` } });
+      setBookings(prev => prev.map(b => b.id === booking.id ? { ...b, status: 'confirmed' } : b));
+    } catch { alert('เกิดข้อผิดพลาดในการยืนยัน'); }
+  };
+
   const recent = [...bookings].slice(0, 8);
   const today = bookings.filter(b => new Date(b.createdAt).toDateString() === new Date().toDateString()).length;
 
@@ -175,8 +183,16 @@ const AdminDashboard = () => {
                     </span>
                   </td>
                   <td className="py-2.5 px-3 text-right">
-                    <Link to={`/admin/bookings/edit/${b.id}`}
-                      className="text-blue-500 hover:text-blue-700 text-xs">แก้ไข</Link>
+                    <div className="flex items-center justify-end gap-2">
+                      {b.status === 'pending' && (
+                        <button onClick={() => handleConfirm(b)}
+                          className="bg-green-500 hover:bg-green-600 text-white text-xs px-2 py-0.5 rounded-lg">
+                          ✓ ยืนยัน
+                        </button>
+                      )}
+                      <Link to={`/admin/bookings/edit/${b.id}`}
+                        className="text-blue-500 hover:text-blue-700 text-xs">แก้ไข</Link>
+                    </div>
                   </td>
                 </tr>
               ))}

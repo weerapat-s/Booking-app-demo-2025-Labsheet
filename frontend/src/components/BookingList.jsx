@@ -45,6 +45,16 @@ const BookingList = () => {
     } catch { alert('เกิดข้อผิดพลาดในการลบ'); }
   };
 
+  const handleConfirm = async (booking) => {
+    try {
+      await axios.put(`${API_URL}/api/bookings/${booking.id}`, {
+        ...booking,
+        status: 'confirmed',
+      }, { headers: { Authorization: `Bearer ${token}` } });
+      fetchBookings();
+    } catch { alert('เกิดข้อผิดพลาดในการยืนยัน'); }
+  };
+
   const filtered = bookings.filter(b => {
     const matchSearch = !search ||
       b.fullname.toLowerCase().includes(search.toLowerCase()) ||
@@ -141,11 +151,17 @@ const BookingList = () => {
                     </span>
                   </td>
                   <td className="py-3 px-4 text-right">
-                    <div className="flex items-center justify-end gap-3">
+                    <div className="flex items-center justify-end gap-2">
+                      {b.status === 'pending' && (
+                        <button onClick={() => handleConfirm(b)}
+                          className="inline-flex items-center gap-1 bg-green-500 hover:bg-green-600 text-white text-xs font-medium px-2.5 py-1 rounded-lg transition-colors">
+                          ✓ ยืนยัน
+                        </button>
+                      )}
                       <Link to={`/admin/bookings/edit/${b.id}`}
-                        className="text-blue-500 hover:text-blue-700 text-xs font-medium">แก้ไข</Link>
+                        className="text-blue-500 hover:text-blue-700 text-xs font-medium px-1">แก้ไข</Link>
                       <button onClick={() => handleDelete(b.id)}
-                        className="text-red-400 hover:text-red-600 text-xs font-medium">ลบ</button>
+                        className="text-red-400 hover:text-red-600 text-xs font-medium px-1">ลบ</button>
                     </div>
                   </td>
                 </tr>
