@@ -16,49 +16,59 @@ function App() {
   return (
     <AuthProvider>
       <Router>
-        <div className="min-h-screen bg-gray-100">
-          <NavBar />
-          <Routes>
-            <Route path="/"       element={<HomePage />} />
-            <Route path="/booking" element={<BookingForm />} />
-            <Route path="/login"  element={<Login />} />
-            <Route path="/admin"
-              element={<ProtectedRoute><AdminLayout><AdminDashboard /></AdminLayout></ProtectedRoute>} />
-            <Route path="/admin/bookings"
-              element={<ProtectedRoute><AdminLayout><BookingList /></AdminLayout></ProtectedRoute>} />
-            <Route path="/admin/bookings/new"
-              element={<ProtectedRoute><AdminLayout><BookingCreate /></AdminLayout></ProtectedRoute>} />
-            <Route path="/admin/bookings/edit/:id"
-              element={<ProtectedRoute><AdminLayout><BookingEdit /></AdminLayout></ProtectedRoute>} />
-            <Route path="/admin/rooms"
-              element={<ProtectedRoute><AdminLayout><RoomsManagement /></AdminLayout></ProtectedRoute>} />
-            <Route path="/admin/reports"
-              element={<ProtectedRoute><AdminLayout><Reports /></AdminLayout></ProtectedRoute>} />
-          </Routes>
-        </div>
+        <Routes>
+          <Route path="/"       element={<PublicLayout><HomePage /></PublicLayout>} />
+          <Route path="/booking" element={<PublicLayout><BookingForm /></PublicLayout>} />
+          <Route path="/login"  element={<Login />} />
+          <Route path="/admin"
+            element={<ProtectedRoute><AdminLayout><AdminDashboard /></AdminLayout></ProtectedRoute>} />
+          <Route path="/admin/bookings"
+            element={<ProtectedRoute><AdminLayout><BookingList /></AdminLayout></ProtectedRoute>} />
+          <Route path="/admin/bookings/new"
+            element={<ProtectedRoute><AdminLayout><BookingCreate /></AdminLayout></ProtectedRoute>} />
+          <Route path="/admin/bookings/edit/:id"
+            element={<ProtectedRoute><AdminLayout><BookingEdit /></AdminLayout></ProtectedRoute>} />
+          <Route path="/admin/rooms"
+            element={<ProtectedRoute><AdminLayout><RoomsManagement /></AdminLayout></ProtectedRoute>} />
+          <Route path="/admin/reports"
+            element={<ProtectedRoute><AdminLayout><Reports /></AdminLayout></ProtectedRoute>} />
+        </Routes>
       </Router>
     </AuthProvider>
   );
 }
 
+const PublicLayout = ({ children }) => (
+  <div className="min-h-screen bg-gray-50 flex flex-col">
+    <NavBar />
+    <main className="flex-1">{children}</main>
+    <footer className="bg-gray-900 text-gray-400 text-center text-xs py-4">
+      © 2025 Hotel Booking System · ระบบจองห้องพักออนไลน์
+    </footer>
+  </div>
+);
+
 const NavBar = () => {
   const { user } = useAuth();
   return (
-    <nav className="bg-white shadow-sm">
-      <div className="container mx-auto px-4">
+    <nav className="bg-white border-b border-gray-100 sticky top-0 z-30">
+      <div className="max-width mx-auto px-4 sm:px-6" style={{ maxWidth: 1100 }}>
         <div className="flex justify-between items-center h-16">
-          <Link to="/" className="text-xl font-bold text-gray-800">🏨 ระบบจองห้องพัก</Link>
-          <div className="flex items-center gap-4">
-            <Link to="/"        className="text-sm text-gray-600 hover:text-gray-900">หน้าแรก</Link>
-            <Link to="/booking" className="text-sm text-gray-600 hover:text-gray-900">จองห้องพัก</Link>
+          <Link to="/" className="flex items-center gap-2 font-bold text-gray-800 text-lg">
+            <span className="text-2xl">🏨</span> LuxeStay
+          </Link>
+          <div className="flex items-center gap-2 sm:gap-4">
+            <Link to="/" className="text-sm text-gray-500 hover:text-gray-800 hidden sm:block">หน้าแรก</Link>
+            <Link to="/booking"
+              className="text-sm text-gray-500 hover:text-gray-800 hidden sm:block">จองห้องพัก</Link>
             {user ? (
               <Link to="/admin"
-                className="text-sm bg-gray-800 text-white px-4 py-1.5 rounded-lg hover:bg-gray-700">
+                className="text-sm bg-gray-900 text-white px-4 py-1.5 rounded-lg hover:bg-gray-700 transition-colors">
                 Admin Panel
               </Link>
             ) : (
               <Link to="/login"
-                className="text-sm bg-blue-600 text-white px-4 py-1.5 rounded-lg hover:bg-blue-700">
+                className="text-sm bg-blue-600 text-white px-4 py-1.5 rounded-lg hover:bg-blue-700 transition-colors">
                 เข้าสู่ระบบ
               </Link>
             )}
@@ -70,13 +80,101 @@ const NavBar = () => {
 };
 
 const HomePage = () => (
-  <div className="container mx-auto px-4 py-8">
-    <h1 className="text-4xl font-bold text-center mb-8">ยินดีต้อนรับสู่ระบบจองห้องพัก</h1>
-    <div className="text-center">
-      <Link to="/booking"
-        className="inline-block bg-blue-500 text-white px-6 py-3 rounded-lg hover:bg-blue-600">
-        จองห้องพักเลย
-      </Link>
+  <div>
+    {/* Hero */}
+    <div className="relative bg-gradient-to-br from-gray-900 via-blue-950 to-gray-900 text-white overflow-hidden">
+      <div className="absolute inset-0 opacity-10"
+        style={{ backgroundImage: 'radial-gradient(circle at 20% 50%, #3b82f6 0%, transparent 50%), radial-gradient(circle at 80% 20%, #6366f1 0%, transparent 50%)' }} />
+      <div className="relative max-w-5xl mx-auto px-6 py-24 text-center">
+        <div className="inline-block bg-blue-500/20 text-blue-300 text-xs font-medium px-3 py-1 rounded-full mb-6">
+          ✨ ระบบจองห้องพักออนไลน์
+        </div>
+        <h1 className="text-4xl sm:text-5xl font-bold leading-tight mb-4">
+          พักผ่อนอย่างสะดวกสบาย<br />
+          <span className="text-blue-400">จองง่าย ราคาโปร่งใส</span>
+        </h1>
+        <p className="text-gray-300 text-lg mb-8 max-w-xl mx-auto">
+          เลือกห้องพักที่ถูกใจ จองออนไลน์ได้ทันที ไม่ต้องโทรหาเจ้าหน้าที่
+        </p>
+        <div className="flex flex-col sm:flex-row gap-3 justify-center">
+          <Link to="/booking"
+            className="bg-blue-500 hover:bg-blue-400 text-white font-semibold px-8 py-3 rounded-xl transition-colors text-sm">
+            จองห้องพักเลย →
+          </Link>
+          <a href="#rooms"
+            className="bg-white/10 hover:bg-white/20 text-white px-8 py-3 rounded-xl transition-colors text-sm">
+            ดูห้องพัก
+          </a>
+        </div>
+      </div>
+    </div>
+
+    {/* Stats */}
+    <div className="bg-white border-b border-gray-100">
+      <div className="max-w-4xl mx-auto px-6 py-8 grid grid-cols-3 gap-6 text-center">
+        {[
+          { num: '3+', label: 'ประเภทห้องพัก' },
+          { num: '24/7', label: 'บริการออนไลน์' },
+          { num: '100%', label: 'ปลอดภัย' },
+        ].map(s => (
+          <div key={s.label}>
+            <div className="text-2xl font-bold text-blue-600">{s.num}</div>
+            <div className="text-xs text-gray-500 mt-1">{s.label}</div>
+          </div>
+        ))}
+      </div>
+    </div>
+
+    {/* Room types */}
+    <div id="rooms" className="max-w-5xl mx-auto px-6 py-16">
+      <h2 className="text-2xl font-bold text-gray-800 text-center mb-2">ห้องพักของเรา</h2>
+      <p className="text-gray-500 text-center text-sm mb-10">เลือกห้องพักที่เหมาะกับคุณ</p>
+      <div className="grid sm:grid-cols-3 gap-6">
+        {[
+          { icon: '🛏️', name: 'ห้องมาตรฐาน', desc: 'เหมาะสำหรับ 1-2 ท่าน พร้อมสิ่งอำนวยความสะดวกครบครัน', price: '1,200', cap: '2 ท่าน', color: 'from-sky-50 to-blue-50' },
+          { icon: '🌟', name: 'ห้องดีลักซ์', desc: 'พื้นที่กว้างขวาง วิวสวย เหมาะสำหรับ 2-3 ท่าน', price: '1,800', cap: '3 ท่าน', color: 'from-violet-50 to-purple-50' },
+          { icon: '👑', name: 'ห้องสวีท', desc: 'ห้องพักหรู ขนาดใหญ่ เหมาะสำหรับครอบครัว', price: '2,500', cap: '4 ท่าน', color: 'from-amber-50 to-yellow-50' },
+        ].map(r => (
+          <div key={r.name} className={`bg-gradient-to-br ${r.color} rounded-2xl p-6 border border-white shadow-sm hover:shadow-md transition-shadow`}>
+            <div className="text-4xl mb-3">{r.icon}</div>
+            <h3 className="font-bold text-gray-800 mb-1">{r.name}</h3>
+            <p className="text-gray-500 text-sm mb-4">{r.desc}</p>
+            <div className="flex items-end justify-between">
+              <div>
+                <span className="text-xl font-bold text-gray-800">฿{r.price}</span>
+                <span className="text-xs text-gray-400"> / คืน</span>
+              </div>
+              <span className="text-xs bg-white px-2 py-1 rounded-full text-gray-500 border">👥 {r.cap}</span>
+            </div>
+          </div>
+        ))}
+      </div>
+      <div className="text-center mt-10">
+        <Link to="/booking"
+          className="inline-block bg-blue-600 hover:bg-blue-700 text-white font-semibold px-10 py-3 rounded-xl transition-colors">
+          จองห้องพักเลย
+        </Link>
+      </div>
+    </div>
+
+    {/* Features */}
+    <div className="bg-gray-900 text-white py-16 px-6">
+      <div className="max-w-4xl mx-auto text-center mb-10">
+        <h2 className="text-2xl font-bold mb-2">ทำไมต้องเลือกเรา?</h2>
+      </div>
+      <div className="max-w-4xl mx-auto grid sm:grid-cols-3 gap-6">
+        {[
+          { icon: '⚡', t: 'จองเร็ว ทำได้ทันที', d: 'ไม่ต้องรอ ไม่ต้องโทร กรอกฟอร์มเสร็จก็จองได้เลย' },
+          { icon: '🔒', t: 'ปลอดภัย มั่นใจได้', d: 'ข้อมูลของคุณถูกเข้ารหัสและเก็บอย่างปลอดภัย' },
+          { icon: '📱', t: 'ใช้งานได้ทุกอุปกรณ์', d: 'รองรับมือถือ แท็บเล็ต และคอมพิวเตอร์' },
+        ].map(f => (
+          <div key={f.t} className="bg-white/5 rounded-2xl p-6 text-center hover:bg-white/10 transition-colors">
+            <div className="text-3xl mb-3">{f.icon}</div>
+            <div className="font-semibold mb-2">{f.t}</div>
+            <div className="text-gray-400 text-sm">{f.d}</div>
+          </div>
+        ))}
+      </div>
     </div>
   </div>
 );
