@@ -1,7 +1,6 @@
 #!/bin/sh
 set -e
 
-# Extract host and port from DATABASE_URL
 DB_HOST=$(echo "$DATABASE_URL" | sed -E 's|.*@([^:/]+).*|\1|')
 DB_PORT=$(echo "$DATABASE_URL" | sed -E 's|.*:([0-9]+)/[^?]*.*|\1|')
 DB_PORT=${DB_PORT:-5432}
@@ -23,4 +22,4 @@ echo "Running Prisma migrations..."
 npx prisma migrate deploy --schema=prisma/schema.prisma
 
 echo "Starting application..."
-exec npm start
+exec node server.js
