@@ -410,7 +410,85 @@ app.get('/api/reports/export', authenticateToken, async (req, res) => {
   }
 });
 
-app.get('/', (req, res) => res.json({ message: 'Booking API is running', version: '1.0.0' }));
+app.get('/', async (req, res) => {
+  let dbStatus = 'เชื่อมต่อแล้ว';
+  let roomCount = 0;
+  let bookingCount = 0;
+  try {
+    roomCount = await db.room.count();
+    bookingCount = await db.booking.count();
+  } catch {
+    dbStatus = 'ไม่สามารถเชื่อมต่อได้';
+  }
+  const now = new Date().toLocaleString('th-TH', { timeZone: 'Asia/Bangkok', dateStyle: 'full', timeStyle: 'medium' });
+  res.setHeader('Content-Type', 'text/html; charset=utf-8');
+  res.send(`<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Booking API Dashboard</title>
+  <style>
+    body { font-family: 'Segoe UI', sans-serif; background: #f8fafc; color: #1e293b; margin: 0; padding: 20px; }
+    .container { max-width: 800px; margin: 40px auto; }
+    h1 { color: #0f172a; margin-bottom: 4px; }
+    .badge { display: inline-block; background: #16a34a; color: white; border-radius: 20px; padding: 2px 12px; font-size: 13px; }
+    .card { background: white; border-radius: 12px; padding: 20px; margin: 16px 0; box-shadow: 0 1px 4px rgba(0,0,0,.08); }
+    .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+    .stat { text-align: center; }
+    .stat .num { font-size: 36px; font-weight: 700; color: #2563eb; }
+    .stat .label { color: #64748b; font-size: 14px; }
+    table { width: 100%; border-collapse: collapse; }
+    th { background: #f1f5f9; text-align: left; padding: 10px 14px; font-size: 14px; color: #475569; }
+    td { padding: 10px 14px; border-top: 1px solid #e2e8f0; font-size: 14px; }
+    td a { color: #2563eb; text-decoration: none; font-family: monospace; }
+    td a:hover { text-decoration: underline; }
+    .method { border-radius: 4px; padding: 2px 7px; font-size: 12px; font-weight: 600; font-family: monospace; }
+    .get { background: #dbeafe; color: #1d4ed8; }
+    .post { background: #dcfce7; color: #15803d; }
+    .put { background: #fef9c3; color: #854d0e; }
+    .del { background: #fee2e2; color: #b91c1c; }
+    .lock { color: #f59e0b; font-size: 12px; margin-left: 4px; }
+    footer { text-align: center; color: #94a3b8; font-size: 12px; margin-top: 24px; }
+  </style>
+</head>
+<body>
+<div class="container">
+  <h1>🏨 Booking API <span class="badge">v1.0.0</span></h1>
+  <p style="color:#64748b">อัปเดต: ${now}</p>
+
+  <div class="grid">
+    <div class="card stat"><div class="num">${roomCount}</div><div class="label">ห้องพักทั้งหมด</div></div>
+    <div class="card stat"><div class="num">${bookingCount}</div><div class="label">การจองทั้งหมด</div></div>
+    <div class="card stat"><div class="num" style="color:#16a34a">✓</div><div class="label">ฐานข้อมูล: ${dbStatus}</div></div>
+  </div>
+
+  <div class="card">
+    <h3 style="margin-top:0">📡 API Endpoints</h3>
+    <table>
+      <tr><th>Method</th><th>Endpoint</th><th>คำอธิบาย</th></tr>
+      <tr><td><span class="method get">GET</span></td><td><a href="/api/rooms">/api/rooms</a></td><td>ดูห้องพักทั้งหมด</td></tr>
+      <tr><td><span class="method post">POST</span></td><td>/api/login</td><td>เข้าสู่ระบบ</td></tr>
+      <tr><td><span class="method post">POST</span></td><td>/api/bookings</td><td>สร้างการจองใหม่</td></tr>
+      <tr><td><span class="method get">GET</span></td><td>/api/bookings<span class="lock">🔒</span></td><td>ดูการจองทั้งหมด (ต้อง login)</td></tr>
+      <tr><td><span class="method put">PUT</span></td><td>/api/bookings/:id<span class="lock">🔒</span></td><td>แก้ไขการจอง</td></tr>
+      <tr><td><span class="method del">DEL</span></td><td>/api/bookings/:id<span class="lock">🔒</span></td><td>ลบการจอง</td></tr>
+      <tr><td><span class="method get">GET</span></td><td>/api/reports<span class="lock">🔒</span></td><td>รายงานสรุป</td></tr>
+      <tr><td><span class="method get">GET</span></td><td><a href="/health">/health</a></td><td>ตรวจสอบสถานะ server</td></tr>
+    </table>
+  </div>
+
+  <div class="card">
+    <h3 style="margin-top:0">🔗 ลิงก์</h3>
+    <p>Frontend: <a href="${process.env.FRONTEND_URL || '#'}">${process.env.FRONTEND_URL || 'localhost'}</a></p>
+    <p>Environment: <strong>${process.env.NODE_ENV || 'development'}</strong></p>
+  </div>
+</div>
+<footer>Booking App &copy; 2025</footer>
+</body>
+</html>`);
+});
+
 app.get('/health', (req, res) => res.json({ status: 'ok' }));
 
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
