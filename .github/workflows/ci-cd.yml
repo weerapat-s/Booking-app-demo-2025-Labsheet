@@ -227,14 +227,15 @@ jobs:
       - name: Deploy to Vercel (Production)
         env:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          VITE_API_URL: ${{ secrets.RENDER_BACKEND_URL }}
         run: |
           if [ -z "$VERCEL_TOKEN" ]; then
             echo "VERCEL_TOKEN not set — skipping Vercel deployment"
-            echo "Set VERCEL_TOKEN in GitHub Secrets to enable deployment"
             exit 0
           fi
           cd frontend
-          vercel --prod --token "$VERCEL_TOKEN" --yes
+          vercel --prod --token "$VERCEL_TOKEN" --yes \
+            --build-env VITE_API_URL="$VITE_API_URL"
 
   # ─────────────────────────────────────────────
   # Job 5: Deploy Backend to Render
