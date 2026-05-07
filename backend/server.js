@@ -410,6 +410,7 @@ app.get('/api/reports/export', authenticateToken, async (req, res) => {
   }
 });
 
+app.get('/', (req, res) => res.json({ message: 'Booking API is running', version: '1.0.0' }));
 app.get('/health', (req, res) => res.json({ status: 'ok' }));
 
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
