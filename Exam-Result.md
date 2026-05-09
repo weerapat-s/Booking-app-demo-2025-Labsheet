@@ -16,7 +16,7 @@
 |--------|-----|--------|
 | GitHub Repository | https://github.com/weerapat-s/Booking-app-demo-2025-Labsheet | ✅ Public |
 | Production Frontend | https://booking-app-demo-2025-azure.vercel.app | ✅ READY |
-| Production Backend | https://booking-app-demo-2025-labsheet.onrender.com/api/health | ⚠️ ยังไม่ได้ deploy |
+| Production Backend | https://restaurant-management-system-exam-2025-1.onrender.com/api/health | ⏳ กำลัง deploy |
 
 ---
 
