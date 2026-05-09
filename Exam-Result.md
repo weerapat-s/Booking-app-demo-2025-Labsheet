@@ -16,7 +16,7 @@
 |--------|-----|--------|
 | GitHub Repository | https://github.com/weerapat-s/Booking-app-demo-2025-Labsheet | ✅ Public |
 | Production Frontend | https://booking-app-demo-2025-azure.vercel.app | ✅ READY |
-| Production Backend | https://restaurant-management-system-exam-2025-1.onrender.com/api/health | ⏳ กำลัง deploy |
+| Production Backend | https://booking-app-demo-2025-1.onrender.com/api/health | ✅ READY |
 
 ---
 
@@ -132,9 +132,9 @@
 - [x] 65 commits
 
 ### Deployment
-- [ ] Frontend deploy บน Vercel
-- [ ] Backend deploy บน Render
-- [ ] Database (PostgreSQL) บน Render
-- [ ] Environment Variables ตั้งค่าถูกต้อง
-- [ ] ทดสอบ `/api/health` ตอบ `{"status":"ok"}`
-- [ ] ทดสอบ Frontend เชื่อมต่อ Backend ได้
+- [x] Frontend deploy บน Vercel
+- [x] Backend deploy บน Render
+- [x] Database (PostgreSQL) บน Render
+- [x] Environment Variables ตั้งค่าถูกต้อง
+- [x] ทดสอบ `/api/health` ตอบ `{"status":"ok"}`
+- [x] VITE_API_URL ชี้ไปที่ backend ถูกต้อง

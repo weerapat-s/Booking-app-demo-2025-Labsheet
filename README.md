@@ -5,7 +5,7 @@
 | Service | URL |
 |---------|-----|
 | Frontend | [https://booking-app-demo-2025-azure.vercel.app](https://booking-app-demo-2025-azure.vercel.app) |
-| Backend API | [https://restaurant-management-system-exam-2025-1.onrender.com/api/health](https://restaurant-management-system-exam-2025-1.onrender.com/api/health) |
+| Backend API | [https://booking-app-demo-2025-1.onrender.com/api/health](https://booking-app-demo-2025-1.onrender.com/api/health) |
 
 ## Features
 
