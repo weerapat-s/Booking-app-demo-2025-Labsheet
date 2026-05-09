@@ -21,7 +21,7 @@ const BookingCreate = () => {
   useEffect(() => {
     axios.get(`${API_URL}/api/rooms`)
       .then(r => setRooms(r.data))
-      .catch(() => setError('ไม่สามารถดึงข้อมูลห้องพักได้'))
+      .catch(() => setError('ไม่สามารถดึงข้อมูลห้องเรียนได้'))
       .finally(() => setLoadingRooms(false));
   }, []);
 
@@ -38,7 +38,7 @@ const BookingCreate = () => {
   const handleSubmit = async e => {
     e.preventDefault();
     setError('');
-    if (!formData.roomId) return setError('กรุณาเลือกห้องพัก');
+    if (!formData.roomId) return setError('กรุณาเลือกห้องเรียน');
     if (new Date(formData.checkout) <= new Date(formData.checkin))
       return setError('วันเช็คเอาท์ต้องมาหลังวันเช็คอิน');
     if (!/^[0-9]{10}$/.test(formData.phone))
@@ -58,8 +58,8 @@ const BookingCreate = () => {
   return (
     <div className="max-w-2xl mx-auto space-y-5">
       <div>
-        <h1 className="text-2xl font-bold text-gray-800">เพิ่มการจองใหม่</h1>
-        <p className="text-gray-500 text-sm mt-0.5">กรอกข้อมูลเพื่อสร้างการจองใหม่</p>
+        <h1 className="text-2xl font-bold text-gray-800">เพิ่มรายการแจ้งซ่อม</h1>
+        <p className="text-gray-500 text-sm mt-0.5">กรอกข้อมูลเพื่อสร้างรายการแจ้งซ่อม</p>
       </div>
 
       {error && (
@@ -68,7 +68,7 @@ const BookingCreate = () => {
 
       <form onSubmit={handleSubmit} className="space-y-5">
         <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
-          <h3 className="font-semibold text-gray-700 mb-4">ข้อมูลผู้จอง</h3>
+          <h3 className="font-semibold text-gray-700 mb-4">ข้อมูลผู้แจ้ง</h3>
           <div className="grid sm:grid-cols-2 gap-4">
             <div className="sm:col-span-2">
               <label className="block text-sm font-medium text-gray-700 mb-1.5">ชื่อ-นามสกุล <span className="text-red-400">*</span></label>
@@ -90,33 +90,33 @@ const BookingCreate = () => {
 
         <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
           <h3 className="font-semibold text-gray-700 mb-4">
-            ข้อมูลการเข้าพัก
-            {nights > 0 && <span className="ml-2 text-sm font-normal text-blue-500">({nights} คืน)</span>}
+            ข้อมูลการแจ้งซ่อม
+            {nights > 0 && <span className="ml-2 text-sm font-normal text-blue-500">({nights} วัน)</span>}
           </h3>
           <div className="grid sm:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1.5">วันเช็คอิน <span className="text-red-400">*</span></label>
+              <label className="block text-sm font-medium text-gray-700 mb-1.5">วันที่แจ้ง <span className="text-red-400">*</span></label>
               <input type="date" name="checkin" value={formData.checkin} onChange={handleChange}
                 min={new Date().toISOString().split('T')[0]} className={inp} required />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1.5">วันเช็คเอาท์ <span className="text-red-400">*</span></label>
+              <label className="block text-sm font-medium text-gray-700 mb-1.5">วันที่กำหนดเสร็จ <span className="text-red-400">*</span></label>
               <input type="date" name="checkout" value={formData.checkout} onChange={handleChange}
                 min={formData.checkin} className={inp} required />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1.5">ห้องพัก <span className="text-red-400">*</span></label>
+              <label className="block text-sm font-medium text-gray-700 mb-1.5">ห้องเรียน <span className="text-red-400">*</span></label>
               <select name="roomId" value={formData.roomId} onChange={handleChange}
                 className={inp} required disabled={loadingRooms}>
-                <option value="">-- เลือกห้องพัก --</option>
+                <option value="">-- เลือกห้องเรียน --</option>
                 {rooms.map(r => (
-                  <option key={r.id} value={r.id}>{r.name} — ฿{r.price.toLocaleString()}/คืน ({r.capacity} ท่าน)</option>
+                  <option key={r.id} value={r.id}>{r.name} — ฿{r.price.toLocaleString()}/วัน ({r.capacity} คน)</option>
                 ))}
               </select>
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1.5">
-                จำนวนผู้เข้าพัก {selectedRoom && <span className="text-gray-400">(สูงสุด {selectedRoom.capacity})</span>}
+                จำนวนผู้เกี่ยวข้อง {selectedRoom && <span className="text-gray-400">(สูงสุด {selectedRoom.capacity})</span>}
               </label>
               <input type="number" name="guests" value={formData.guests} onChange={handleChange}
                 min="1" max={selectedRoom?.capacity || 10} className={inp} required />
@@ -130,7 +130,7 @@ const BookingCreate = () => {
 
           {selectedRoom && nights > 0 && (
             <div className="mt-4 p-4 bg-blue-50 rounded-xl text-sm flex items-center justify-between">
-              <span className="text-gray-600">{selectedRoom.name} × {nights} คืน</span>
+              <span className="text-gray-600">{selectedRoom.name} × {nights} วัน</span>
               <span className="font-bold text-blue-600">฿{(selectedRoom.price * nights).toLocaleString()}</span>
             </div>
           )}
@@ -139,7 +139,7 @@ const BookingCreate = () => {
         <div className="flex gap-3">
           <button type="submit" disabled={saving || loadingRooms}
             className="flex-1 bg-blue-600 hover:bg-blue-700 disabled:opacity-60 text-white font-semibold py-2.5 rounded-xl text-sm">
-            {saving ? 'กำลังบันทึก...' : 'บันทึกการจอง'}
+            {saving ? 'กำลังบันทึก...' : 'บันทึกคำร้องแจ้งซ่อม'}
           </button>
           <button type="button" onClick={() => navigate('/admin/bookings')}
             className="flex-1 border border-gray-200 text-gray-600 hover:bg-gray-50 py-2.5 rounded-xl text-sm">

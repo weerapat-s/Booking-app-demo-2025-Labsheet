@@ -4,8 +4,8 @@ import { useAuth } from '../contexts/AuthContext';
 
 const navItems = [
   { path: '/admin',          icon: '🏠', label: 'ภาพรวม' },
-  { path: '/admin/bookings', icon: '📋', label: 'การจองทั้งหมด' },
-  { path: '/admin/rooms',    icon: '🏨', label: 'จัดการห้องพัก' },
+  { path: '/admin/bookings', icon: '📋', label: 'รายการแจ้งซ่อม' },
+  { path: '/admin/rooms',    icon: '🏫', label: 'จัดการห้องเรียน' },
   { path: '/admin/reports',  icon: '📊', label: 'รายงาน' },
 ];
 
@@ -20,10 +20,10 @@ const AdminLayout = ({ children }) => {
   const Sidebar = ({ mobile = false }) => (
     <div className={`flex flex-col h-full bg-gray-900 text-white ${mobile ? 'w-64' : 'w-64'}`}>
       <div className="flex items-center gap-3 px-6 py-5 border-b border-gray-700">
-        <span className="text-2xl">🏨</span>
+        <span className="text-2xl">🛠️</span>
         <div>
-          <div className="font-bold text-sm leading-tight">Hotel Admin</div>
-          <div className="text-xs text-gray-400">ระบบจัดการโรงแรม</div>
+          <div className="font-bold text-sm leading-tight">แจ้งซ่อม Admin</div>
+          <div className="text-xs text-gray-400">ระบบแจ้งซ่อมสถานศึกษา</div>
         </div>
       </div>
 

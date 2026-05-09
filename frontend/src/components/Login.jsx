@@ -33,13 +33,13 @@ const Login = () => {
       {/* Left panel */}
       <div className="hidden lg:flex flex-1 bg-gradient-to-br from-gray-900 via-blue-950 to-gray-900 items-center justify-center p-12">
         <div className="text-white text-center max-w-sm">
-          <div className="text-7xl mb-6">🏨</div>
-          <h1 className="text-3xl font-bold mb-3">LuxeStay Admin</h1>
+          <div className="text-7xl mb-6">🛠️</div>
+          <h1 className="text-3xl font-bold mb-3">แจ้งซ่อม Admin</h1>
           <p className="text-gray-400 text-sm leading-relaxed">
-            ระบบจัดการโรงแรมครบครัน จัดการการจอง ห้องพัก และรายงานได้ในที่เดียว
+            ระบบแจ้งซ่อมสถานศึกษา จัดการคำร้อง ห้องเรียน และดูรายงานได้ในที่เดียว
           </p>
           <div className="mt-8 grid grid-cols-2 gap-4 text-left">
-            {['📋 จัดการการจอง', '🏨 จัดการห้องพัก', '📊 ดูรายงาน', '⚡ อัปเดตสถานะ'].map(f => (
+            {['📋 จัดการการแจ้งซ่อม', '🏫 จัดการห้องเรียน', '📊 ดูรายงาน', '⚡ อัปเดตสถานะ'].map(f => (
               <div key={f} className="bg-white/10 rounded-xl px-4 py-3 text-sm text-gray-300">{f}</div>
             ))}
           </div>
@@ -50,8 +50,8 @@ const Login = () => {
       <div className="flex-1 flex items-center justify-center bg-gray-50 px-6 py-12">
         <div className="w-full max-w-sm">
           <div className="lg:hidden text-center mb-8">
-            <span className="text-5xl">🏨</span>
-            <h1 className="text-xl font-bold text-gray-800 mt-2">LuxeStay Admin</h1>
+            <span className="text-5xl">🛠️</span>
+            <h1 className="text-xl font-bold text-gray-800 mt-2">แจ้งซ่อม Admin</h1>
           </div>
 
           <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8">

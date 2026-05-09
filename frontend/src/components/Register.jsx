@@ -41,13 +41,13 @@ const Register = () => {
       {/* Left panel */}
       <div className="hidden lg:flex flex-1 bg-gradient-to-br from-gray-900 via-blue-950 to-gray-900 items-center justify-center p-12">
         <div className="text-white text-center max-w-sm">
-          <div className="text-7xl mb-6">🏨</div>
-          <h1 className="text-3xl font-bold mb-3">LuxeStay</h1>
+          <div className="text-7xl mb-6">🛠️</div>
+          <h1 className="text-3xl font-bold mb-3">แจ้งซ่อม</h1>
           <p className="text-gray-400 text-sm leading-relaxed">
-            สมัครสมาชิกเพื่อจองห้องพัก ติดตามสถานะการจอง และรับสิทธิพิเศษสำหรับสมาชิก
+            สมัครสมาชิกเพื่อแจ้งซ่อมห้องเรียน ติดตามสถานะคำร้อง และรับการแจ้งเตือนอัปเดต
           </p>
           <div className="mt-8 space-y-3 text-left">
-            {['✅ ติดตามสถานะการจองได้ทันที', '🔔 รับการแจ้งเตือนอัปเดต', '⭐ สิทธิพิเศษสำหรับสมาชิก', '🔒 ข้อมูลปลอดภัย เข้ารหัสทุกขั้นตอน'].map(f => (
+            {['✅ ติดตามสถานะแจ้งซ่อมได้ทันที', '🔔 รับการแจ้งเตือนอัปเดต', '⭐ แจ้งซ่อมได้ไม่จำกัด', '🔒 ข้อมูลปลอดภัย เข้ารหัสทุกขั้นตอน'].map(f => (
               <div key={f} className="bg-white/10 rounded-xl px-4 py-3 text-sm text-gray-300">{f}</div>
             ))}
           </div>
@@ -58,13 +58,13 @@ const Register = () => {
       <div className="flex-1 flex items-center justify-center bg-gray-50 px-6 py-12">
         <div className="w-full max-w-sm">
           <div className="lg:hidden text-center mb-8">
-            <span className="text-5xl">🏨</span>
-            <h1 className="text-xl font-bold text-gray-800 mt-2">LuxeStay</h1>
+            <span className="text-5xl">🛠️</span>
+            <h1 className="text-xl font-bold text-gray-800 mt-2">แจ้งซ่อม</h1>
           </div>
 
           <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8">
             <h2 className="text-2xl font-bold text-gray-800 mb-1">สมัครสมาชิก</h2>
-            <p className="text-gray-500 text-sm mb-6">สร้างบัญชีเพื่อเริ่มจองห้องพัก</p>
+            <p className="text-gray-500 text-sm mb-6">สร้างบัญชีเพื่อเริ่มแจ้งซ่อมห้องเรียน</p>
 
             {error && (
               <div className="bg-red-50 border border-red-200 text-red-700 text-sm px-4 py-3 rounded-xl mb-5">

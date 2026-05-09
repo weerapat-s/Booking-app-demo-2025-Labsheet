@@ -76,7 +76,7 @@ const BookingEdit = () => {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-gray-800">แก้ไขการจอง #{id}</h1>
-          <p className="text-gray-500 text-sm mt-0.5">แก้ไขข้อมูลและสถานะการจอง</p>
+          <p className="text-gray-500 text-sm mt-0.5">แก้ไขข้อมูลและสถานะการแจ้งซ่อม</p>
         </div>
         <span className={`px-3 py-1.5 rounded-full text-xs font-semibold ${statusConfig[formData.status]?.color}`}>
           {statusConfig[formData.status]?.label}
@@ -92,7 +92,7 @@ const BookingEdit = () => {
       <form onSubmit={handleSubmit} className="space-y-5">
         {/* Status card */}
         <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
-          <h3 className="font-semibold text-gray-700 mb-4">สถานะการจอง</h3>
+          <h3 className="font-semibold text-gray-700 mb-4">สถานะการแจ้งซ่อม</h3>
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
             {Object.entries(statusConfig).map(([key, cfg]) => (
               <label key={key}
@@ -110,7 +110,7 @@ const BookingEdit = () => {
 
         {/* Guest info */}
         <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
-          <h3 className="font-semibold text-gray-700 mb-4">ข้อมูลผู้จอง</h3>
+          <h3 className="font-semibold text-gray-700 mb-4">ข้อมูลผู้แจ้ง</h3>
           <div className="grid sm:grid-cols-2 gap-4">
             <div className="sm:col-span-2">
               <label className="block text-sm font-medium text-gray-700 mb-1.5">ชื่อ-นามสกุล</label>
@@ -130,31 +130,31 @@ const BookingEdit = () => {
         {/* Stay info */}
         <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
           <h3 className="font-semibold text-gray-700 mb-4">
-            ข้อมูลการเข้าพัก
-            {nights > 0 && <span className="ml-2 text-sm font-normal text-blue-500">({nights} คืน)</span>}
+            ข้อมูลการแจ้งซ่อม
+            {nights > 0 && <span className="ml-2 text-sm font-normal text-blue-500">({nights} วัน)</span>}
           </h3>
           <div className="grid sm:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1.5">วันเช็คอิน</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1.5">วันที่แจ้ง</label>
               <input type="date" name="checkin" value={formData.checkin} onChange={handleChange} className={inp} required />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1.5">วันเช็คเอาท์</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1.5">วันที่กำหนดเสร็จ</label>
               <input type="date" name="checkout" value={formData.checkout} onChange={handleChange}
                 min={formData.checkin} className={inp} required />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1.5">ห้องพัก</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1.5">ห้องเรียน</label>
               <select name="roomId" value={formData.roomId} onChange={handleChange} className={inp} required>
-                <option value="">เลือกห้องพัก</option>
+                <option value="">เลือกห้องเรียน</option>
                 {rooms.map(r => (
-                  <option key={r.id} value={r.id}>{r.name} — ฿{r.price.toLocaleString()}/คืน</option>
+                  <option key={r.id} value={r.id}>{r.name} — ฿{r.price.toLocaleString()}/วัน</option>
                 ))}
               </select>
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1.5">
-                จำนวนผู้เข้าพัก {selectedRoom && <span className="text-gray-400">(สูงสุด {selectedRoom.capacity} ท่าน)</span>}
+                จำนวนผู้เกี่ยวข้อง {selectedRoom && <span className="text-gray-400">(สูงสุด {selectedRoom.capacity} คน)</span>}
               </label>
               <input type="number" name="guests" value={formData.guests} onChange={handleChange}
                 min="1" max={selectedRoom?.capacity || 10} className={inp} required />
@@ -168,7 +168,7 @@ const BookingEdit = () => {
 
           {selectedRoom && nights > 0 && (
             <div className="mt-4 p-4 bg-gray-50 rounded-xl text-sm flex items-center justify-between">
-              <span className="text-gray-600">{selectedRoom.name} × {nights} คืน</span>
+              <span className="text-gray-600">{selectedRoom.name} × {nights} วัน</span>
               <span className="font-bold text-blue-600">฿{(selectedRoom.price * nights).toLocaleString()}</span>
             </div>
           )}

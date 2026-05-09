@@ -48,7 +48,7 @@ const BookingList = () => {
   }, [fetchBookings]);
 
   const handleDelete = async (id) => {
-    if (!window.confirm('ต้องการลบการจองนี้?')) return;
+    if (!window.confirm('ต้องการลบรายการแจ้งซ่อมนี้?')) return;
     try {
       await axios.delete(`${API_URL}/api/bookings/${id}`, {
         headers: { Authorization: `Bearer ${token}` },
@@ -83,7 +83,7 @@ const BookingList = () => {
     <div className="space-y-5">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold text-gray-800">การจองทั้งหมด</h1>
+          <h1 className="text-2xl font-bold text-gray-800">รายการแจ้งซ่อมทั้งหมด</h1>
           <div className="flex items-center gap-2 mt-0.5">
             <p className="text-gray-500 text-sm">{bookings.length} รายการ</p>
             <span className="flex items-center gap-1 text-xs text-gray-400">
@@ -95,7 +95,7 @@ const BookingList = () => {
         </div>
         <Link to="/admin/bookings/new"
           className="inline-flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 text-sm font-medium">
-          + เพิ่มการจองใหม่
+          + เพิ่มรายการแจ้งซ่อม
         </Link>
       </div>
 
@@ -133,17 +133,17 @@ const BookingList = () => {
               <tr>
                 <th className="text-left py-3 px-4 text-gray-500 font-medium">#</th>
                 <th className="text-left py-3 px-4 text-gray-500 font-medium">ผู้จอง</th>
-                <th className="text-left py-3 px-4 text-gray-500 font-medium hidden md:table-cell">ห้องพัก</th>
-                <th className="text-left py-3 px-4 text-gray-500 font-medium hidden lg:table-cell">วันเช็คอิน</th>
-                <th className="text-left py-3 px-4 text-gray-500 font-medium hidden lg:table-cell">วันเช็คเอาท์</th>
-                <th className="text-left py-3 px-4 text-gray-500 font-medium hidden md:table-cell">ผู้เข้าพัก</th>
+                <th className="text-left py-3 px-4 text-gray-500 font-medium hidden md:table-cell">ห้องเรียน</th>
+                <th className="text-left py-3 px-4 text-gray-500 font-medium hidden lg:table-cell">วันที่แจ้ง</th>
+                <th className="text-left py-3 px-4 text-gray-500 font-medium hidden lg:table-cell">วันที่กำหนดเสร็จ</th>
+                <th className="text-left py-3 px-4 text-gray-500 font-medium hidden md:table-cell">ผู้เกี่ยวข้อง</th>
                 <th className="text-left py-3 px-4 text-gray-500 font-medium">สถานะ</th>
                 <th className="text-right py-3 px-4 text-gray-500 font-medium">จัดการ</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-50">
               {filtered.length === 0 ? (
-                <tr><td colSpan={8} className="text-center py-12 text-gray-400">ไม่พบข้อมูลการจอง</td></tr>
+                <tr><td colSpan={8} className="text-center py-12 text-gray-400">ไม่พบรายการแจ้งซ่อม</td></tr>
               ) : filtered.map(b => (
                 <tr key={b.id} className="hover:bg-gray-50 transition-colors">
                   <td className="py-3 px-4 text-gray-400 font-mono text-xs">{b.id}</td>
@@ -162,7 +162,7 @@ const BookingList = () => {
                     {new Date(b.checkout).toLocaleDateString('th-TH')}
                   </td>
                   <td className="py-3 px-4 text-gray-600 hidden md:table-cell">
-                    {b.guests} ท่าน
+                    {b.guests} คน
                   </td>
                   <td className="py-3 px-4">
                     <select

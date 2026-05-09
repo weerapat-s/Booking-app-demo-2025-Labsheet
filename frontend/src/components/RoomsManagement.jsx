@@ -26,7 +26,7 @@ const RoomsManagement = () => {
       setIsOnline(true);
     } catch (err) {
       if (err.response?.status === 401 || err.response?.status === 403) logout();
-      else { setError('ไม่สามารถดึงข้อมูลห้องพักได้'); setIsOnline(false); }
+      else { setError('ไม่สามารถดึงข้อมูลห้องเรียนได้'); setIsOnline(false); }
     } finally { setLoading(false); }
   }, [logout]);
 
@@ -73,7 +73,7 @@ const RoomsManagement = () => {
   };
 
   const handleDelete = async id => {
-    if (!window.confirm('ยืนยันการลบห้องพักนี้?')) return;
+    if (!window.confirm('ยืนยันการลบห้องเรียนนี้?')) return;
     try {
       await axios.delete(`${API_URL}/api/rooms/${id}`, { headers: { Authorization: `Bearer ${token}` } });
       fetchRooms(false);
@@ -88,9 +88,9 @@ const RoomsManagement = () => {
     <div className="space-y-5">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-800">จัดการห้องพัก</h1>
+          <h1 className="text-2xl font-bold text-gray-800">จัดการห้องเรียน</h1>
           <div className="flex items-center gap-2 mt-0.5">
-            <p className="text-gray-500 text-sm">{rooms.length} ห้องพักในระบบ</p>
+            <p className="text-gray-500 text-sm">{rooms.length} ห้องเรียนในระบบ</p>
             <span className="flex items-center gap-1 text-xs text-gray-400">
               <span className={`w-1.5 h-1.5 rounded-full ${isOnline ? 'bg-green-400 animate-pulse' : 'bg-red-400'}`} />
               {isOnline ? 'LIVE' : 'ออฟไลน์'}
@@ -100,7 +100,7 @@ const RoomsManagement = () => {
         </div>
         <button onClick={() => { resetForm(); setShowForm(true); }}
           className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 text-sm font-medium">
-          + เพิ่มห้องพักใหม่
+          + เพิ่มห้องเรียนใหม่
         </button>
       </div>
 
@@ -113,7 +113,7 @@ const RoomsManagement = () => {
         <div className="bg-white rounded-xl shadow-sm border border-blue-100 p-6">
           <div className="flex items-center justify-between mb-5">
             <h2 className="font-semibold text-gray-700 text-lg">
-              {editId ? '✏️ แก้ไขห้องพัก' : '➕ เพิ่มห้องพักใหม่'}
+              {editId ? '✏️ แก้ไขห้องเรียน' : '➕ เพิ่มห้องเรียนใหม่'}
             </h2>
             <button onClick={resetForm} className="text-gray-400 hover:text-gray-600 text-xl leading-none">✕</button>
           </div>
@@ -126,15 +126,15 @@ const RoomsManagement = () => {
               <p className="text-xs text-gray-400 mt-1">ตัวอักษรไม่ซ้ำ ใช้สำหรับระบุประเภท</p>
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">ชื่อห้องพัก <span className="text-red-400">*</span></label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">ชื่อห้องเรียน <span className="text-red-400">*</span></label>
               <input type="text" name="name" value={form.name} onChange={handleChange} required
-                placeholder="เช่น ห้องมาตรฐาน"
+                placeholder="เช่น ห้อง 101, ห้องปฏิบัติการวิทย์"
                 className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-300" />
             </div>
             <div className="md:col-span-2">
               <label className="block text-sm font-medium text-gray-700 mb-1">รายละเอียด</label>
               <textarea name="description" value={form.description} onChange={handleChange} rows={2}
-                placeholder="รายละเอียดห้องพัก..."
+                placeholder="รายละเอียดห้องเรียน เช่น อุปกรณ์ที่มี จำนวนโต๊ะ..."
                 className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-300" />
             </div>
             <div>
@@ -143,14 +143,14 @@ const RoomsManagement = () => {
                 className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-300" />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">ราคา (บาท/คืน) <span className="text-red-400">*</span></label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">ราคาประเมิน (บาท/วัน) <span className="text-red-400">*</span></label>
               <input type="number" name="price" value={form.price} onChange={handleChange} min="0" required
                 className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-300" />
             </div>
             <div className="md:col-span-2 flex gap-3 pt-2">
               <button type="submit"
                 className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 text-sm font-medium">
-                {editId ? 'บันทึกการแก้ไข' : 'เพิ่มห้องพัก'}
+                {editId ? 'บันทึกการแก้ไข' : 'เพิ่มห้องเรียน'}
               </button>
               <button type="button" onClick={resetForm}
                 className="border border-gray-200 text-gray-600 px-6 py-2 rounded-lg hover:bg-gray-50 text-sm">
@@ -164,10 +164,10 @@ const RoomsManagement = () => {
       {/* Rooms grid */}
       {rooms.length === 0 ? (
         <div className="bg-white rounded-xl shadow-sm p-12 text-center text-gray-400">
-          <div className="text-4xl mb-3">🏨</div>
-          <p>ยังไม่มีห้องพักในระบบ</p>
+          <div className="text-4xl mb-3">🏫</div>
+          <p>ยังไม่มีห้องเรียนในระบบ</p>
           <button onClick={() => setShowForm(true)} className="mt-3 text-blue-500 hover:underline text-sm">
-            + เพิ่มห้องพักแรก
+            + เพิ่มห้องเรียนแรก
           </button>
         </div>
       ) : (
@@ -195,11 +195,11 @@ const RoomsManagement = () => {
               <p className="text-gray-500 text-sm mb-4 line-clamp-2">{room.description}</p>
               <div className="flex items-center justify-between pt-3 border-t border-gray-50">
                 <div className="text-sm text-gray-500">
-                  👥 รองรับ <span className="font-medium text-gray-700">{room.capacity}</span> ท่าน
+                  👥 รองรับ <span className="font-medium text-gray-700">{room.capacity}</span> คน
                 </div>
                 <div className="text-right">
                   <span className="text-lg font-bold text-gray-800">฿{room.price.toLocaleString()}</span>
-                  <span className="text-xs text-gray-400"> / คืน</span>
+                  <span className="text-xs text-gray-400"> / วัน</span>
                 </div>
               </div>
             </div>

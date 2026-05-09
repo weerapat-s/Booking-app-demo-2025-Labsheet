@@ -116,7 +116,7 @@ const AdminDashboard = () => {
         <StatCard icon="✅" label="ยืนยันแล้ว" value={stats.confirmed}
           sub={`เสร็จสิ้น ${stats.completed} รายการ`} color="bg-green-50" />
         <StatCard icon="💰" label="รายได้ (ยืนยัน+เสร็จ)" value={`฿${revenue.toLocaleString()}`}
-          sub={`${rooms.length} ประเภทห้องพัก`} color="bg-purple-50" />
+          sub={`${rooms.length} ห้องเรียน`} color="bg-purple-50" />
       </div>
 
       {/* Status breakdown */}
@@ -149,27 +149,27 @@ const AdminDashboard = () => {
         </div>
 
         <div className="bg-white rounded-xl shadow-sm p-5">
-          <h2 className="font-semibold text-gray-700 mb-4">ห้องพักในระบบ</h2>
+          <h2 className="font-semibold text-gray-700 mb-4">ห้องเรียนในระบบ</h2>
           {rooms.length === 0 ? (
-            <p className="text-gray-400 text-sm">ยังไม่มีห้องพัก</p>
+            <p className="text-gray-400 text-sm">ยังไม่มีข้อมูล</p>
           ) : (
             <div className="space-y-3">
               {rooms.map(r => (
                 <div key={r.id} className="flex items-center justify-between py-2 border-b border-gray-50 last:border-0">
                   <div>
                     <div className="font-medium text-gray-800 text-sm">{r.name}</div>
-                    <div className="text-xs text-gray-400">รองรับ {r.capacity} ท่าน</div>
+                    <div className="text-xs text-gray-400">รองรับ {r.capacity} คน</div>
                   </div>
                   <div className="text-right">
                     <div className="font-semibold text-gray-700 text-sm">฿{r.price.toLocaleString()}</div>
-                    <div className="text-xs text-gray-400">/ คืน</div>
+                    <div className="text-xs text-gray-400">/ วัน</div>
                   </div>
                 </div>
               ))}
             </div>
           )}
           <Link to="/admin/rooms" className="mt-3 inline-block text-xs text-blue-500 hover:underline">
-            จัดการห้องพัก →
+            จัดการห้องเรียน →
           </Link>
         </div>
       </div>
@@ -185,7 +185,7 @@ const AdminDashboard = () => {
             <thead>
               <tr className="border-b border-gray-100">
                 <th className="text-left py-2 px-3 text-gray-500 font-medium">ชื่อ</th>
-                <th className="text-left py-2 px-3 text-gray-500 font-medium hidden md:table-cell">ห้อง</th>
+                <th className="text-left py-2 px-3 text-gray-500 font-medium hidden md:table-cell">ห้องเรียน</th>
                 <th className="text-left py-2 px-3 text-gray-500 font-medium hidden lg:table-cell">เช็คอิน</th>
                 <th className="text-left py-2 px-3 text-gray-500 font-medium">สถานะ</th>
                 <th className="text-right py-2 px-3 text-gray-500 font-medium"></th>
@@ -221,7 +221,7 @@ const AdminDashboard = () => {
             </tbody>
           </table>
           {bookings.length === 0 && (
-            <p className="text-center py-8 text-gray-400">ยังไม่มีข้อมูลการจอง</p>
+            <p className="text-center py-8 text-gray-400">ยังไม่มีรายการแจ้งซ่อม</p>
           )}
         </div>
       </div>

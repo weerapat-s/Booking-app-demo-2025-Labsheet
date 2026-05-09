@@ -71,9 +71,9 @@ const Reports = () => {
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-gray-800">รายงานการจอง</h1>
+          <h1 className="text-2xl font-bold text-gray-800">รายงานการแจ้งซ่อม</h1>
           <div className="flex items-center gap-2 mt-0.5">
-            <p className="text-gray-500 text-sm">ข้อมูลสถิติและสรุปผลการจองทั้งหมด</p>
+            <p className="text-gray-500 text-sm">ข้อมูลสถิติและสรุปผลการแจ้งซ่อมทั้งหมด</p>
             <span className="flex items-center gap-1 text-xs text-gray-400">
               <span className={`w-1.5 h-1.5 rounded-full ${isOnline ? 'bg-green-400 animate-pulse' : 'bg-red-400'}`} />
               {isOnline ? 'LIVE' : 'ออฟไลน์'}
@@ -96,8 +96,8 @@ const Reports = () => {
       {/* KPI */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         {[
-          { icon: '📋', label: 'การจองทั้งหมด', value: bookings.length, color: 'bg-blue-50 text-blue-600' },
-          { icon: '🌙', label: 'จำนวนคืนรวม', value: nights, color: 'bg-purple-50 text-purple-600' },
+          { icon: '📋', label: 'รายการแจ้งซ่อมทั้งหมด', value: bookings.length, color: 'bg-blue-50 text-blue-600' },
+          { icon: '📅', label: 'จำนวนวันรวม', value: nights, color: 'bg-purple-50 text-purple-600' },
           { icon: '💰', label: 'รายได้ (ยืนยัน+เสร็จ)', value: `฿${revenue.toLocaleString()}`, color: 'bg-green-50 text-green-600' },
           { icon: '⏳', label: 'รอดำเนินการ', value: byStatus.pending || 0, color: 'bg-yellow-50 text-yellow-600' },
         ].map(k => (
@@ -114,7 +114,7 @@ const Reports = () => {
       <div className="grid lg:grid-cols-2 gap-6">
         {/* Status breakdown */}
         <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
-          <h3 className="font-semibold text-gray-700 mb-5">สถานะการจอง</h3>
+          <h3 className="font-semibold text-gray-700 mb-5">สถานะการแจ้งซ่อม</h3>
           <div className="space-y-4">
             {['confirmed','pending','completed','cancelled'].map(s => {
               const count = byStatus[s] || 0;
@@ -138,7 +138,7 @@ const Reports = () => {
 
         {/* By room */}
         <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
-          <h3 className="font-semibold text-gray-700 mb-5">การจองตามห้องพัก</h3>
+          <h3 className="font-semibold text-gray-700 mb-5">การแจ้งซ่อมตามห้องเรียน</h3>
           {Object.keys(byRoom).length === 0 ? (
             <p className="text-gray-400 text-sm text-center py-8">ยังไม่มีข้อมูล</p>
           ) : (
@@ -164,15 +164,15 @@ const Reports = () => {
 
       {/* Recent bookings */}
       <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
-        <h3 className="font-semibold text-gray-700 mb-4">การจองล่าสุด 10 รายการ</h3>
+        <h3 className="font-semibold text-gray-700 mb-4">รายการแจ้งซ่อมล่าสุด 10 รายการ</h3>
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-gray-100">
-                <th className="text-left py-2 px-3 text-gray-500 font-medium">ชื่อผู้จอง</th>
-                <th className="text-left py-2 px-3 text-gray-500 font-medium hidden md:table-cell">ห้องพัก</th>
-                <th className="text-left py-2 px-3 text-gray-500 font-medium hidden lg:table-cell">เช็คอิน</th>
-                <th className="text-left py-2 px-3 text-gray-500 font-medium hidden lg:table-cell">คืน</th>
+                <th className="text-left py-2 px-3 text-gray-500 font-medium">ชื่อผู้แจ้ง</th>
+                <th className="text-left py-2 px-3 text-gray-500 font-medium hidden md:table-cell">ห้องเรียน</th>
+                <th className="text-left py-2 px-3 text-gray-500 font-medium hidden lg:table-cell">วันที่แจ้ง</th>
+                <th className="text-left py-2 px-3 text-gray-500 font-medium hidden lg:table-cell">วัน</th>
                 <th className="text-left py-2 px-3 text-gray-500 font-medium">สถานะ</th>
                 <th className="text-right py-2 px-3 text-gray-500 font-medium hidden md:table-cell">มูลค่า</th>
               </tr>
@@ -203,7 +203,7 @@ const Reports = () => {
                 );
               })}
               {bookings.length === 0 && (
-                <tr><td colSpan={6} className="text-center py-10 text-gray-400">ยังไม่มีข้อมูลการจอง</td></tr>
+                <tr><td colSpan={6} className="text-center py-10 text-gray-400">ยังไม่มีรายการแจ้งซ่อม</td></tr>
               )}
             </tbody>
           </table>
