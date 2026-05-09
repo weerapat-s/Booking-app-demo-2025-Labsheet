@@ -4,7 +4,7 @@
 
 | Service | URL |
 |---------|-----|
-| Frontend | [https://booking-app-demo-2025-labsheet.vercel.app](https://booking-app-demo-2025-labsheet.vercel.app) |
+| Frontend | [https://booking-app-demo-2025-azure.vercel.app](https://booking-app-demo-2025-azure.vercel.app) |
 | Backend API | [https://booking-app-demo-2025-labsheet.onrender.com/api/health](https://booking-app-demo-2025-labsheet.onrender.com/api/health) |
 
 ## Features
