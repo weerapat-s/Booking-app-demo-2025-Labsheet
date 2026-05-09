@@ -91,12 +91,12 @@ const validateBookingData = async (data, isUpdate = false) => {
   if (data.roomId !== undefined && data.roomId !== null) {
     room = await db.room.findUnique({ where: { id: Number(data.roomId) } });
     if (!room) {
-      errors.push('ไม่พบห้องพักที่เลือก');
+      errors.push('ไม่พบห้องเรียนที่เลือก');
     } else if (data.guests !== undefined && Number(data.guests) > room.capacity) {
-      errors.push(`จำนวนผู้เข้าพักสูงสุดสำหรับห้องนี้คือ ${room.capacity} ท่าน`);
+      errors.push(`จำนวนผู้เกี่ยวข้องสูงสุดสำหรับห้องเรียนนี้คือ ${room.capacity} คน`);
     }
   } else if (!isUpdate) {
-    errors.push('กรุณาเลือกห้องพัก');
+    errors.push('กรุณาเลือกห้องเรียน');
   }
 
   if (data.status && !STATUS_VALUES.includes(data.status)) {
@@ -343,7 +343,7 @@ app.put('/api/rooms/:id', authenticateToken, requireAdmin, async (req, res) => {
     res.json(updated);
   } catch (error) {
     if (error.code === 'P2025') {
-      return res.status(404).json({ error: 'ไม่พบข้อมูลห้องพัก' });
+      return res.status(404).json({ error: 'ไม่พบข้อมูลห้องเรียน' });
     }
     res.status(400).json({ error: error.message });
   }
@@ -352,10 +352,10 @@ app.put('/api/rooms/:id', authenticateToken, requireAdmin, async (req, res) => {
 app.delete('/api/rooms/:id', authenticateToken, requireAdmin, async (req, res) => {
   try {
     await db.room.delete({ where: { id: Number(req.params.id) } });
-    res.json({ message: 'ลบห้องพักสำเร็จ', id: req.params.id });
+    res.json({ message: 'ลบห้องเรียนสำเร็จ', id: req.params.id });
   } catch (error) {
     if (error.code === 'P2025') {
-      return res.status(404).json({ error: 'ไม่พบข้อมูลห้องพัก' });
+      return res.status(404).json({ error: 'ไม่พบข้อมูลห้องเรียน' });
     }
     res.status(400).json({ error: error.message });
   }
@@ -475,11 +475,11 @@ app.get('/', async (req, res) => {
 </head>
 <body>
 <div class="container">
-  <h1>🏨 Booking API <span class="badge">v1.0.0</span></h1>
+  <h1>🛠️ Repair API <span class="badge">v1.0.0</span></h1>
   <p style="color:#64748b">อัปเดต: ${now}</p>
 
   <div class="grid">
-    <div class="card stat"><div class="num">${roomCount}</div><div class="label">ห้องพักทั้งหมด</div></div>
+    <div class="card stat"><div class="num">${roomCount}</div><div class="label">ห้องเรียนทั้งหมด</div></div>
     <div class="card stat"><div class="num">${bookingCount}</div><div class="label">การจองทั้งหมด</div></div>
     <div class="card stat"><div class="num" style="color:#16a34a">✓</div><div class="label">ฐานข้อมูล: ${dbStatus}</div></div>
   </div>
@@ -488,7 +488,7 @@ app.get('/', async (req, res) => {
     <h3 style="margin-top:0">📡 API Endpoints</h3>
     <table>
       <tr><th>Method</th><th>Endpoint</th><th>คำอธิบาย</th></tr>
-      <tr><td><span class="method get">GET</span></td><td><a href="/api/rooms">/api/rooms</a></td><td>ดูห้องพักทั้งหมด</td></tr>
+      <tr><td><span class="method get">GET</span></td><td><a href="/api/rooms">/api/rooms</a></td><td>ดูห้องเรียนทั้งหมด</td></tr>
       <tr><td><span class="method post">POST</span></td><td>/api/login</td><td>เข้าสู่ระบบ</td></tr>
       <tr><td><span class="method post">POST</span></td><td>/api/bookings</td><td>สร้างการจองใหม่</td></tr>
       <tr><td><span class="method get">GET</span></td><td>/api/bookings<span class="lock">🔒</span></td><td>ดูการจองทั้งหมด (ต้อง login)</td></tr>
@@ -511,5 +511,6 @@ app.get('/', async (req, res) => {
 });
 
 app.get('/health', (req, res) => res.json({ status: 'ok' }));
+app.get('/api/health', (req, res) => res.json({ status: 'ok' }));
 
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));

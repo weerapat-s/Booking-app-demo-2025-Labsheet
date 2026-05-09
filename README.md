@@ -1,5 +1,12 @@
 # booking-app-demo-2025
 
+## Live Demo
+
+| Service | URL |
+|---------|-----|
+| Frontend | [https://booking-app-demo-2025-labsheet.vercel.app](https://booking-app-demo-2025-labsheet.vercel.app) |
+| Backend API | [https://booking-app-demo-2025-labsheet.onrender.com/api/health](https://booking-app-demo-2025-labsheet.onrender.com/api/health) |
+
 ## Features
 
 This is a comprehensive hotel booking management system with separate frontend and backend applications.
